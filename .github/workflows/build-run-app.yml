@@ -83,8 +83,14 @@ jobs:
           sed -i "1i CFE_APP, $APP_LOWER, ${APP_UPPER}_AppMain, $APP_UPPER, 80, 16384, 0x0, 0;" sample_defs/cpu1_cfe_es_startup.scr
           cat sample_defs/cpu1_cfe_es_startup.scr
 
+      - name: Make prep
+        run: make prep
+
+      - name: Make 
+        run: make 
+        
       - name: Make install
-        run: make SIMULATION=native BUILDTYPE=release OMIT_DEPRECATED=true install
+        run: make install
 
       - name: Run cFS
         working-directory: ./build/exe/cpu1
