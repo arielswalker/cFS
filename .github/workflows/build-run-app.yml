@@ -62,6 +62,7 @@ jobs:
         with:
           submodules: true
           repository: nasa/cFS
+          ref: v6.6.0a
 
       - name: Checkout Repo
         uses: actions/checkout@v3
