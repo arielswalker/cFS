@@ -6,4 +6,7 @@ on:
 jobs:
   static-analysis:
     name: Static Analysis
-    uses: uses: ./.github/workflows/static-analysis.yml@main
+    uses: ./.github/workflows/static-analysis.yml
+    with:
+      path: ${{ github.event.repository.name }}
+      branch: main
