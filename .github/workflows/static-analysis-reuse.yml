@@ -6,4 +6,4 @@ on:
 jobs:
   static-analysis:
     name: Static Analysis
-    uses: uses: ${{ github.repository }}/.github/workflows/static-analysis.yml@main
+    uses: uses: ./.github/workflows/static-analysis.yml@main
