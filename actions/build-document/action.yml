@@ -1,0 +1,46 @@
+name: 'Build Document'
+description: 'Builds documentation and optionally deploys it.'
+inputs:
+  target:
+    description: 'Document target name(s) as stringified JSON matrix list'
+    required: true
+    type: string
+  app-name:
+    description: 'Application name, leave blank if using cache'
+    required: false
+    default: ''
+    type: string
+  cache-key:
+    description: 'Cache key to use'
+    required: false
+    default: ''
+    type: string
+  buildpdf:
+    description: 'Build the PDF'
+    required: false
+    default: 'true'
+    type: boolean
+  deploy:
+    description: 'Deploy archived PDF to gh-pages'
+    required: false
+    default: 'true'
+    type: boolean
+  needs_osal_api:
+    description: 'Whether this depends on the osal public api (compatibility bridge)'
+    required: false
+    default: 'true'
+    type: boolean
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+    - name: Run Build Script
+      run: ./build-document.sh
+      env:
+        TARGET: ${{ inputs.target }}
+        APP_NAME: ${{ inputs.app-name }}
+        CACHE_KEY: ${{ inputs.cache-key }}
+        BUILD_PDF: ${{ inputs.buildpdf }}
+        DEPLOY: ${{ inputs.deploy }}
+        NEEDS_OSAL_API: ${{ inputs.needs_osal_api }}
