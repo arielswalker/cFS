@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -euo pipefail
 
 # Parse arguments
 TARGET=$1
