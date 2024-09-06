@@ -3,11 +3,9 @@ set -euo pipefail
 
 # Parse arguments
 TARGET=$1
-APP_NAME=$2
-CACHE_KEY=$3
+CACHE_KEY=$2
+DEPLOY=$3
 BUILD_PDF=$4
-DEPLOY=$5
-NEEDS_OSAL_API=$6
 
 # Check if DEPLOY and CACHE_KEY are compatible
 if [[ "$DEPLOY" == "true" && -n "$CACHE_KEY" ]]; then
