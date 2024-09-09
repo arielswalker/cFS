@@ -7,6 +7,13 @@ BUILD_PDF=$4
 APP_NAME=$5
 NEEDS_OSAL_API=$6
 
+echo "Target: $TARGET"
+echo "Cache Key: $CACHE_KEY"
+echo "Deploy: $DEPLOY"
+echo "Build PDF: $BUILD_PDF"
+echo "App Name: $APP_NAME"
+echo "Needs OSAL API: $NEEDS_OSAL_API"
+
 # Convert TARGETS from JSON to an array
 TARGETS=$(echo $TARGETS | jq -r '.[]')
 
