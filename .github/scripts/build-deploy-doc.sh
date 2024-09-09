@@ -52,9 +52,6 @@ build_document() {
     # Move the warnings log to the root
     mv build/docs/${target}/${target}-warnings.log .
 
-    echo "Archiving build logs..."
-    gh run upload-artifact --name "${target}_doc_build_logs" --path "${target}_stdout.txt,${target}_stderr.txt,${target}-warnings.log"
-
     echo "Checking for errors..."
     if grep -q "Error" "${target}_stderr.txt"; then
         echo "Errors found in ${target}_stderr.txt"
@@ -73,19 +70,6 @@ build_document() {
         make -C build/docs/${target}/latex
         mkdir -p deploy
         mv build/docs/${target}/latex/refman.pdf deploy/${target}.pdf
-
-        echo "Archiving PDF..."
-        # Archive PDF artifact
-        gh run upload-artifact --name "${target}_pdf" --path "deploy/${target}.pdf"
-    fi
-
-    if [ "$DEPLOY" = true ]; then
-        echo "Deploying PDF to GitHub Pages..."
-        npx github-pages-deploy-action@4.1.0 \
-            --token "$GITHUB_TOKEN" \
-            --branch "gh-pages" \
-            --folder "deploy" \
-            --single-commit
     fi
 }
 
