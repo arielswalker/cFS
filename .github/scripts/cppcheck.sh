@@ -34,6 +34,8 @@ cppcheck --force --inline-suppr --xml $CPPCHECK_OPTS 2> cppcheck_err.xml
 # Run strict cppcheck if directories are provided
 if [ -n "$STRICT_DIR_LIST" ]; then
   echo "Running strict cppcheck..."
+  echo "$(pwd)"
+  ls
   cppcheck --force --inline-suppr --std=c99 --language=c --enable=warning,performance,portability,style --suppress=variableScope --inconclusive --xml $STRICT_DIR_LIST 2> strict_cppcheck_err.xml
 
   echo "Merging cppcheck results..."
