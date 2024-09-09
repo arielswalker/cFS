@@ -68,8 +68,8 @@ build_document() {
     if [ "$BUILD_PDF" = true ]; then
         echo "Generating PDF..."
         make -C build/docs/${target}/latex
-        mkdir -p deploy
-        mv build/docs/${target}/latex/refman.pdf deploy/${target}.pdf
+        #  Move the pdf to the root
+        mv build/docs/${target}/latex/refman.pdf .
     fi
 }
 
