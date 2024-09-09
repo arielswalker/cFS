@@ -24,7 +24,7 @@ if [ -n "$CMAKE_PROJECT_OPTIONS" ]; then
   cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/staging -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=debug $CMAKE_PROJECT_OPTIONS -S source -B build
   export CPPCHECK_OPTS="--project=$(pwd)/build/compile_commands.json"
 else
-  export CPPCHECK_OPTS="$(pwd)/source"
+  export CPPCHECK_OPTS="$(pwd)"
 fi
 
 # Run cppcheck
