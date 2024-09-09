@@ -49,10 +49,3 @@ npx "@microsoft/sarif-multitool" convert "cppcheck_err.xml" --tool "CppCheck" --
 echo "Converting cppcheck results to Markdown..."
 xsltproc cppcheck-xml2text.xslt cppcheck_err.xml | tee cppcheck_err.txt
 
-# Upload SARIF results and artifacts
-echo "Uploading SARIF results..."
-# Ensure you have GitHub CLI installed and authenticated, or use another method for uploading artifacts
-gh actions artifacts upload cppcheck_err.sarif
-
-echo "Archiving static analysis artifacts..."
-tar -czf cppcheck-errors.tar.gz cppcheck_err.xml cppcheck_err.sarif cppcheck_err.txt
