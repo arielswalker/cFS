@@ -44,7 +44,7 @@ if [ -n "$STRICT_DIR_LIST" ]; then
   ls -l strict_cppcheck_err.xml
 
   echo "Merging cppcheck results..."
-  cd $(pwd)
+  cd ../
   echo "Current directory before merge: $(pwd)"
   ls -l
   mv cppcheck_err.xml general_cppcheck_err.xml
