@@ -1,105 +1,84 @@
 #!/bin/bash
 
-# Parse arguments
-TARGET=$1
+TARGETS=$1
 CACHE_KEY=$2
 DEPLOY=$3
 BUILD_PDF=$4
+APP_NAME=$5
+NEEDS_OSAL_API=$6
 
-# Check if DEPLOY and CACHE_KEY are compatible
-if [[ "$DEPLOY" == "true" && -n "$CACHE_KEY" ]]; then
-  echo "Deployment when using cache not supported due to password fail issue"
-  exit 1
-fi
+# Convert TARGETS from JSON to an array
+TARGETS=$(echo $TARGETS | jq -r '.[]')
 
-# Get cache if supplied
-if [[ -n "$CACHE_KEY" ]]; then
-  echo "Restoring cache with key: $CACHE_KEY"
-  # Replace with the actual command to restore cache
-fi
+# Function to handle document build
+build_document() {
+    local target=$1
 
-# Checkout Bundle Main
-if [[ -n "$APP_NAME" ]]; then
-  echo "Checking out repository nasa/cFS"
-  # Replace with the actual checkout command
-fi
+    echo "Building document for target: $target"
 
-# Checkout Repo
-if [[ -n "$APP_NAME" ]]; then
-  echo "Checking out repository with path apps/$APP_NAME"
-  # Replace with the actual checkout command
-fi
+    # Handle cache if provided
+    if [ -n "$CACHE_KEY" ]; then
+        echo "Getting cache for key: $CACHE_KEY"
+        # Cache logic here (this is just a placeholder)
+    fi
 
-# Copy Files
-echo "Copying files"
-cp ./cfe/cmake/Makefile.sample Makefile
-cp -r ./cfe/cmake/sample_defs sample_defs
+    # Prepare the environment
+    echo "Checking out repository and preparing build..."
+    cp ./cfe/cmake/Makefile.sample Makefile
+    cp -r ./cfe/cmake/sample_defs sample_defs
 
-# Add Repo To Build
-if [[ -n "$APP_NAME" ]]; then
-  echo "Adding repo to build"
-  echo "set(MISSION_GLOBAL_APPLIST $APP_NAME)" >> sample_defs/targets.cmake
-fi
+    if [ -n "$APP_NAME" ]; then
+        echo "Adding app to build: $APP_NAME"
+        echo "set(MISSION_GLOBAL_APPLIST $APP_NAME)" >> sample_defs/targets.cmake
+    fi
 
-# Make Prep
-echo "Running make prep"
-make prep
+    echo "Making prep..."
+    make prep
 
-# Install Doxygen Dependencies
-echo "Installing Doxygen dependencies"
-sudo apt-get update && sudo apt-get install doxygen graphviz -y
+    echo "Installing dependencies..."
+    sudo apt-get update && sudo apt-get install -y doxygen graphviz
+    if [ "$BUILD_PDF" = true ]; then
+        sudo apt-get install -y texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
+    fi
 
-# Install PDF Generation Dependencies
-if [[ "$BUILD_PDF" == "true" ]]; then
-  echo "Installing PDF generation dependencies"
-  sudo apt-get install texlive-latex-base texlive-fonts-recommended texlive-fonts-extra texlive-latex-extra
-fi
+    if [ "$NEEDS_OSAL_API" = true ]; then
+        echo "Generating OSAL header list..."
+        make -C build osal_public_api_headerlist
+    fi
 
-# Generate OSAL header list
-if [[ "$NEEDS_OSAL_API" == "true" ]]; then
-  echo "Generating OSAL header list"
-  make -C build osal_public_api_headerlist
-fi
+    echo "Building document..."
+    make -C build $target 2>&1 | tee "${target}_stderr.txt"
+    mv build/docs/${target}/${target}-warnings.log .
 
-# Build Document
-echo "Building document for target: $TARGET"
-make -C build "$TARGET" 2>&1 > "$TARGET"_stdout.txt | tee "$TARGET"_stderr.txt
-mv build/docs/"$TARGET"/"$TARGET"-warnings.log .
+    echo "Checking for errors..."
+    if [ -s "${target}_stderr.txt" ]; then
+        cat "${target}_stderr.txt"
+        exit 1
+    fi
 
-# Archive Document Build Logs
-echo "Archiving document build logs"
-# Replace with the actual command to upload artifacts
+    echo "Checking for warnings..."
+    if [ -s "${target}-warnings.log" ]; then
+        cat "${target}-warnings.log"
+        exit 1
+    fi
 
-# Check For Document Build Errors
-if [[ -s "$TARGET"_stderr.txt ]]; then
-  cat "$TARGET"_stderr.txt
-  exit 1
-fi
+    if [ "$BUILD_PDF" = true ]; then
+        echo "Generating PDF..."
+        make -C build/docs/${target}/latex
+        mkdir -p deploy
+        mv build/docs/${target}/latex/refman.pdf deploy/${target}.pdf
 
-# Check For Document Warnings
-if [[ -s "$TARGET"-warnings.log ]]; then
-  cat "$TARGET"-warnings.log
-  exit 1
-fi
+        echo "Archiving PDF..."
+        # Archive PDF logic (using GitHub Actions for example)
+    fi
 
-# Generate PDF
-if [[ "$BUILD_PDF" == "true" ]]; then
-  echo "Generating PDF"
-  make -C ./build/docs/"$TARGET"/latex
-  mkdir deploy
-  mv ./build/docs/"$TARGET"/latex/refman.pdf ./deploy/"$TARGET".pdf
-  # Optionally convert PDF to GitHub markdown
-  # pandoc "$TARGET".pdf -t gfm
-fi
+    if [ "$DEPLOY" = true ]; then
+        echo "Deploying to GitHub Pages..."
+        # Deploy logic (using GitHub Actions for example)
+    fi
+}
 
-# Archive PDF
-if [[ "$BUILD_PDF" == "true" ]]; then
-  echo "Archiving PDF"
-  # Replace with the actual command to upload PDF
-fi
-
-# Deploy to GitHub
-if [[ "$DEPLOY" == "true" ]]; then
-  echo "Deploying to GitHub"
-  # Replace with the actual deployment command
-fi
+# Loop through each target
+for target in $TARGETS; do
+    build_document "$target"
+done
