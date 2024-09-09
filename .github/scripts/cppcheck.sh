@@ -18,10 +18,6 @@ echo "Fetching XSLT files..."
 wget -O cppcheck-xml2text.xslt "https://raw.githubusercontent.com/${CPPCHECK_XSLT_PATH}/cppcheck-xml2text.xslt"
 wget -O cppcheck-merge.xslt "https://raw.githubusercontent.com/${CPPCHECK_XSLT_PATH}/cppcheck-merge.xslt"
 
-# Checkout repository
-echo "Checking out the repository..."
-git clone --recurse-submodules https://github.com/your-repository.git source
-
 # CMake setup if needed
 if [ -n "$CMAKE_PROJECT_OPTIONS" ]; then
   echo "Setting up CMake..."
