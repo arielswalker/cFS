@@ -30,9 +30,6 @@ fi
 # Run cppcheck
 echo "Running general cppcheck..."
 cppcheck --force --inline-suppr --xml $CPPCHECK_OPTS 2> cppcheck_err.xml
-ls
-echo "pwd"
-echo "$(pwd)"
 
 # Run strict cppcheck if directories are provided
 if [ -n "$STRICT_DIR_LIST" ]; then
@@ -40,6 +37,7 @@ if [ -n "$STRICT_DIR_LIST" ]; then
   cd $(pwd)/source
   cppcheck --force --inline-suppr --std=c99 --language=c --enable=warning,performance,portability,style --suppress=variableScope --inconclusive --xml $STRICT_DIR_LIST 2> strict_cppcheck_err.xml
 
+  cd $(pwd)
   echo "Merging cppcheck results..."
   mv cppcheck_err.xml general_cppcheck_err.xml
   xsltproc --stringparam merge_file strict_cppcheck_err.xml cppcheck-merge.xslt general_cppcheck_err.xml > cppcheck_err.xml
