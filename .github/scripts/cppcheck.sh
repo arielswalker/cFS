@@ -24,21 +24,20 @@ if [ -n "$CMAKE_PROJECT_OPTIONS" ]; then
   cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/staging -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=debug $CMAKE_PROJECT_OPTIONS -S source -B build
   export CPPCHECK_OPTS="--project=$(pwd)/build/compile_commands.json"
 else
-  export CPPCHECK_OPTS="$(pwd)"
+  export CPPCHECK_OPTS="$(pwd)/source"
 fi
 
 # Run cppcheck
 echo "Running general cppcheck..."
 cppcheck --force --inline-suppr --xml $CPPCHECK_OPTS 2> cppcheck_err.xml
+ls
+echo "pwd"
+echo "$(pwd)"
 
 # Run strict cppcheck if directories are provided
 if [ -n "$STRICT_DIR_LIST" ]; then
   echo "Running strict cppcheck..."
-  echo "$(pwd)"
-  ls
-  echo "source"
   cd $(pwd)/source
-  ls
   cppcheck --force --inline-suppr --std=c99 --language=c --enable=warning,performance,portability,style --suppress=variableScope --inconclusive --xml $STRICT_DIR_LIST 2> strict_cppcheck_err.xml
 
   echo "Merging cppcheck results..."
