@@ -47,11 +47,14 @@ build_document() {
     fi
 
     echo "Building document..."
-    make -C build $target 2>&1 | tee "${target}_stderr.txt"
+    make -C build $target > "${target}_stdout.txt" 2> "${target}_stderr.txt"
+
+    # Move the warnings log to the root
     mv build/docs/${target}/${target}-warnings.log .
 
     echo "Checking for errors..."
-    if [ -s "${target}_stderr.txt" ]; then
+    if grep -q "Error" "${target}_stderr.txt"; then
+        echo "Errors found in ${target}_stderr.txt"
         cat "${target}_stderr.txt"
         exit 1
     fi
