@@ -69,7 +69,7 @@ build_document() {
         echo "Generating PDF..."
         make -C build/docs/${target}/latex
         #  Move the pdf to the root
-        mv build/docs/${target}/latex/refman.pdf .
+        mv ./build/docs/${{ matrix.target }}/latex/refman.pdf ./${{ matrix.target }}.pdf
     fi
 }
 
