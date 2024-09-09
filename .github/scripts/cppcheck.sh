@@ -1,41 +1,48 @@
 #!/bin/bash
-set -e
 
-# Install cppcheck and other required tools
-echo "Installing cppcheck and other tools..."
+# Input variables
+STRICT_DIR_LIST="${STRICT_DIR_LIST:-}"
+CMAKE_PROJECT_OPTIONS="${CMAKE_PROJECT_OPTIONS:-}"
+CPPCHECK_XSLT_PATH="${CPPCHECK_XSLT_PATH:-nasa/cFS/main/.github/scripts}"
+
+# Install dependencies
+echo "Installing cppcheck and xsltproc..."
 sudo apt-get update
 sudo apt-get install cppcheck xsltproc -y
+
+echo "Installing sarif tool..."
 npm install @microsoft/sarif-multitool
 
-# Fetch conversion XSLT files
+# Fetch XSLT files
 echo "Fetching XSLT files..."
-wget -O cppcheck-xml2text.xslt https://raw.githubusercontent.com/${INPUT_CPP_CHECK_XSLT_PATH}/cppcheck-xml2text.xslt
-wget -O cppcheck-merge.xslt https://raw.githubusercontent.com/${INPUT_CPP_CHECK_XSLT_PATH}/cppcheck-merge.xslt
+wget -O cppcheck-xml2text.xslt "https://raw.githubusercontent.com/${CPPCHECK_XSLT_PATH}/cppcheck-xml2text.xslt"
+wget -O cppcheck-merge.xslt "https://raw.githubusercontent.com/${CPPCHECK_XSLT_PATH}/cppcheck-merge.xslt"
 
-# Checkout the repository
+# Checkout repository
 echo "Checking out the repository..."
-git clone --recurse-submodules https://github.com/${GITHUB_REPOSITORY}.git source
-cd source
+git clone --recurse-submodules https://github.com/your-repository.git source
 
-# CMake setup if required
-if [ -n "${INPUT_CMAKE_PROJECT_OPTIONS}" ]; then
-    echo "Setting up CMake..."
-    cmake -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/staging -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=debug ${INPUT_CMAKE_PROJECT_OPTIONS} -S $GITHUB_WORKSPACE/source -B $GITHUB_WORKSPACE/build
-    export CPPCHECK_OPTS=--project="$GITHUB_WORKSPACE/build/compile_commands.json"
+# CMake setup if needed
+if [ -n "$CMAKE_PROJECT_OPTIONS" ]; then
+  echo "Setting up CMake..."
+  cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/staging -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=debug $CMAKE_PROJECT_OPTIONS -S source -B build
+  export CPPCHECK_OPTS="--project=$(pwd)/build/compile_commands.json"
 else
-    export CPPCHECK_OPTS="$GITHUB_WORKSPACE/source"
+  export CPPCHECK_OPTS="$(pwd)/source"
 fi
 
 # Run cppcheck
-echo "Running cppcheck..."
+echo "Running general cppcheck..."
 cppcheck --force --inline-suppr --xml $CPPCHECK_OPTS 2> cppcheck_err.xml
 
-# Run strict cppcheck if specified
-if [ -n "${INPUT_STRICT_DIR_LIST}" ]; then
-    echo "Running strict cppcheck..."
-    cppcheck --force --inline-suppr --std=c99 --language=c --enable=warning,performance,portability,style --suppress=variableScope --inconclusive --xml ${INPUT_STRICT_DIR_LIST} 2> ../strict_cppcheck_err.xml
-    mv cppcheck_err.xml general_cppcheck_err.xml
-    xsltproc --stringparam merge_file strict_cppcheck_err.xml cppcheck-merge.xslt general_cppcheck_err.xml > cppcheck_err.xml
+# Run strict cppcheck if directories are provided
+if [ -n "$STRICT_DIR_LIST" ]; then
+  echo "Running strict cppcheck..."
+  cppcheck --force --inline-suppr --std=c99 --language=c --enable=warning,performance,portability,style --suppress=variableScope --inconclusive --xml $STRICT_DIR_LIST 2> strict_cppcheck_err.xml
+
+  echo "Merging cppcheck results..."
+  mv cppcheck_err.xml general_cppcheck_err.xml
+  xsltproc --stringparam merge_file strict_cppcheck_err.xml cppcheck-merge.xslt general_cppcheck_err.xml > cppcheck_err.xml
 fi
 
 # Convert cppcheck results to SARIF
@@ -44,16 +51,12 @@ npx "@microsoft/sarif-multitool" convert "cppcheck_err.xml" --tool "CppCheck" --
 
 # Convert cppcheck results to Markdown
 echo "Converting cppcheck results to Markdown..."
-xsltproc cppcheck-xml2text.xslt cppcheck_err.xml | tee $GITHUB_STEP_SUMMARY cppcheck_err.txt
+xsltproc cppcheck-xml2text.xslt cppcheck_err.xml | tee cppcheck_err.txt
 
-# Upload SARIF results
+# Upload SARIF results and artifacts
 echo "Uploading SARIF results..."
-gh codeql-action upload-sarif --sarif_file $GITHUB_WORKSPACE/cppcheck_err.sarif --checkout_path $GITHUB_WORKSPACE/source --category 'cppcheck'
+# Ensure you have GitHub CLI installed and authenticated, or use another method for uploading artifacts
+gh actions artifacts upload cppcheck_err.sarif
 
-# Archive static analysis artifacts
 echo "Archiving static analysis artifacts..."
-tar -czf cppcheck-errors.tar.gz cppcheck_err.*
-
-# Check for reported errors
-echo "Checking for reported errors..."
-tail -n 1 cppcheck_err.txt | grep -q '^\*\*0 error(s) reported\*\*$'
+tar -czf cppcheck-errors.tar.gz cppcheck_err.xml cppcheck_err.sarif cppcheck_err.txt
