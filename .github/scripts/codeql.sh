@@ -5,7 +5,7 @@ COMPONENT_PATH="${1:-cFS}"
 CATEGORY="${2:-}"
 MAKE_COMMAND="${3:-}"
 PREP_COMMAND="${4:-make prep}"
-SETUP_COMMAND="${5:-cp ./cfe/cmake/Makefile.sample Makefile && cp -r ./cfe/cmake/sample_defs sample_defs}"
+SETUP_COMMAND="${5:-cp cfe/cmake/Makefile.sample Makefile && cp -r cfe/cmake/sample_defs sample_defs}"
 TEST_FLAG="${6:-false}"
 
 # Environment Variables
