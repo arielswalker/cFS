@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -ex
 # Input parameters
 COMPONENT_PATH="${COMPONENT_PATH:-cFS}"
 CATEGORY="${CATEGORY:-}"
@@ -21,6 +21,7 @@ eval "$PREP_COMMAND"
 
 echo "Building..."
 eval "$MAKE_COMMAND"
+ls -lR
 
 # Initialize CodeQL
 echo "Initializing CodeQL..."
@@ -33,8 +34,12 @@ codeql --version
 echo "Performing CodeQL analysis..."
 cd "$COMPONENT_PATH" || exit
 ls -a
+ls -lR
 codeql database create codeql-db --language=cpp --source-root=.
 codeql database analyze codeql-db --format=sarif-latest --output=results.sarif --config-file=../.github/codeql/codeql-security.yml 
+codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=security-results.sarif 
+
+
 
 echo "Renaming SARIF files..."
 # Assuming SARIF files are located in a directory named 'CodeQL-Sarif'
