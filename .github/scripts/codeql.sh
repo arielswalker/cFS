@@ -45,7 +45,7 @@ fi
 
 if [ "$TARGET" = "security" ]; then
     echo "Performing Security CodeQL analysis..."
-    codeql database analyze codeql-db qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
-    qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
+    codeql database analyze codeql-db ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
+    ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
     --format=sarif-latest --output=Codeql-security.sarif 
 fi
