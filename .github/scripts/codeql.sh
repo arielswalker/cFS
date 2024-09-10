@@ -34,7 +34,7 @@ echo "Performing CodeQL analysis..."
 cd "$COMPONENT_PATH" || exit
 ls -a
 codeql database create codeql-db --language=cpp --source-root=.
-codeql analyze codeql-db --config-file=.github/codeql/codeql-security.yml --output=results.sarif
+codeql database analyze codeql-db --format=sarif-latest --output=results.sarif --config-file=../.github/codeql/codeql-security.yml 
 
 echo "Renaming SARIF files..."
 # Assuming SARIF files are located in a directory named 'CodeQL-Sarif'
