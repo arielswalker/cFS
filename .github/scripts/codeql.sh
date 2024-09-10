@@ -21,7 +21,7 @@ eval "$PREP_COMMAND"
 
 echo "Building..."
 eval "$MAKE_COMMAND"
-ls -lR
+ls -a
 
 # Initialize CodeQL
 echo "Initializing CodeQL..."
@@ -33,10 +33,7 @@ codeql --version
 
 echo "Performing CodeQL analysis..."
 cd "$COMPONENT_PATH" || exit
-ls -a
-ls -lR
 codeql database create codeql-db --language=cpp --source-root=.
-codeql database analyze codeql-db --format=sarif-latest --output=results.sarif --config-file=../.github/codeql/codeql-security.yml 
 codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=security-results.sarif 
 
 
