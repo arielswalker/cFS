@@ -16,6 +16,8 @@ export OMIT_DEPRECATED=true
 export BUILDTYPE="release"
 export REPO="$(basename "$(pwd)")"
 
+echo "Target: $TARGET"
+
 echo "Setting up build system..."
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
