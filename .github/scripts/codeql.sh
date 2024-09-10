@@ -35,11 +35,11 @@ export PATH="$PATH:$(pwd)/codeql"
 codeql --version
 
 echo "Creating CodeQL database..."
+cd "$COMPONENT_PATH" || exit
 codeql database create codeql-db --language=cpp --source-root=.
 
 if [ "$TARGET" = "coding-standard" ]; then
     echo "Performing Coding Standard CodeQL analysis..."
-    cd "$COMPONENT_PATH" || exit
     codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
 fi
 
