@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -ex
 # Input variables
 STRICT_DIR_LIST="${STRICT_DIR_LIST:-}"
 CMAKE_PROJECT_OPTIONS="${CMAKE_PROJECT_OPTIONS:-}"
