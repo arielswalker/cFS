@@ -34,11 +34,13 @@ echo "Initializing CodeQL..."
 # Download CodeQL CLI
 wget https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.4/codeql-bundle.tar.gz
 tar -xzvf codeql-bundle.tar.gz
-cp -r codeql /usr/local/bin/
+export PATH=$PATH:codeql
 codeql --version
 
 # Perform CodeQL Analysis
 echo "Performing CodeQL analysis..."
+ls
+cd codeql
 ls
 codeql database create codeql-db --language=cpp --source-root=.
 codeql analyze codeql-db --config-file=nasa/cFS/.github/codeql/codeql-security.yml --output=results.sarif
