@@ -52,7 +52,6 @@ fi
 # Convert cppcheck results to SARIF
 echo "Converting cppcheck results to SARIF..."
 npx "@microsoft/sarif-multitool" convert "cppcheck_err.xml" --tool "CppCheck" --output "cppcheck_err.sarif"
-mv $(pwd)/cppcheck_err.sarif .
         
 # Convert cppcheck results to Markdown
 echo "Converting cppcheck results to Markdown..."
