@@ -1,11 +1,11 @@
 #!/bin/bash
 
-TARGETS=$1
-CACHE_KEY=$2
-DEPLOY=$3
-BUILD_PDF=$4
-APP_NAME=$5
-NEEDS_OSAL_API=$6
+TARGETS="${TARGETS:-}"
+CACHE_KEY="${CACHE_KEY:-}"
+DEPLOY="${DEPLOY:-true}"
+BUILD_PDF="${BUILD_PDF:-true}"
+APP_NAME="${APP_NAME:-}"
+NEEDS_OSAL_API="${NEEDS_OSAL_API:-true}"
 
 echo "Target: $TARGET"
 echo "Cache Key: $CACHE_KEY"
@@ -19,7 +19,7 @@ TARGETS=$(echo $TARGETS | jq -r '.[]')
 
 # Function to handle document build
 build_document() {
-    local target=$1
+    local target=$TARGETS
 
     echo "Building document for target: $target"
 
