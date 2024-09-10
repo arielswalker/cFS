@@ -15,28 +15,9 @@ export OMIT_DEPRECATED=true
 export BUILDTYPE="release"
 export REPO="$(basename "$(pwd)")"
 
-# Directory setup
-if [ "$COMPONENT_PATH" == "cFS" ]; then
-    BUILD_DIRECTORY="$(pwd)"
-    echo "Using current directory as build directory: $BUILD_DIRECTORY"
-else
-    # Clone the cFS repository if not using the default component-path
-    echo "Cloning cFS repository..."
-    cd ..
-    git clone https://github.com/nasa/cFS.git --recurse-submodules
-    cd cFS
-    BUILD_DIRECTORY="$(pwd)"
-    echo "Using cloned cFS repository as build directory: $BUILD_DIRECTORY"
-    git log -1 --pretty=oneline
-    git submodule
-    rm -r .git
-    rm -rf "$COMPONENT_PATH"
-    ln -s "$(pwd)" "$COMPONENT_PATH"
-fi
 
-# Checkout code
-echo "Checking out the repository..."
-git clone --recursive "https://github.com/${REPO}.git" "$BUILD_DIRECTORY"
+BUILD_DIRECTORY="$(pwd)"
+ls
 
 # Setup build system
 echo "Setting up build system..."
@@ -44,24 +25,24 @@ cd "$BUILD_DIRECTORY"
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
 
-# Initialize CodeQL
-echo "Initializing CodeQL..."
-# Note: The CodeQL initialization would typically be done in a GitHub Actions context
-# You may need to manually install and run CodeQL commands or use CodeQL CLI
-wget https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.4/codeql-bundle.tar.gz
-tar -xzvf codeql-bundle.tar.gz
-ls
-cp codeql-bundle /usr/local/bin/
-codeql --version
-
-
 # Build the project
 echo "Building the project..."
 eval "$MAKE_COMMAND"
 
+# Initialize CodeQL
+echo "Initializing CodeQL..."
+# Download CodeQL CLI
+wget https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.4/codeql-bundle.tar.gz
+tar -xzvf codeql-bundle.tar.gz
+cp codeql /usr/local/bin/
+codeql --version
+
 # Perform CodeQL Analysis
 echo "Performing CodeQL analysis..."
-# CodeQL CLI commands for analysis would be added here
+ls
+codeql database create codeql-db --language=cpp --source-root=.
+codeql analyze codeql-db --config-file=nasa/cFS/.github/codeql/codeql-security.yml --output=results.sarif
+
 
 # Rename SARIF files
 echo "Renaming SARIF files..."
