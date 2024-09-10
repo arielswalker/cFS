@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Input parameters
-COMPONENT_PATH="${1:-cFS}"
-CATEGORY="${2:-}"
-MAKE_COMMAND="${3:-}"
-PREP_COMMAND="${4:-make prep}"
-SETUP_COMMAND="${5:-cp cfe/cmake/Makefile.sample Makefile && cp -r cfe/cmake/sample_defs sample_defs}"
-TEST_FLAG="${6:-false}"
+COMPONENT_PATH="${COMPONENT_PATH:-cFS}"
+CATEGORY="${CATEGORY:-}"
+MAKE_COMMAND="${MAKE_COMMAND:-}"
+PREP_COMMAND="${PREP_COMMAND:-make prep}"
+SETUP_COMMAND="${SETUP_COMMAND:-cp cfe/cmake/Makefile.sample Makefile && cp -r cfe/cmake/sample_defs sample_defs}"
+TEST_FLAG="${TEST_FLAG:-false}"
 
 # Environment Variables
 export SIMULATION="native"
