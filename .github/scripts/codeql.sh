@@ -1,6 +1,7 @@
 #!/bin/bash
 set -ex
 # Input parameters
+TARGET="${TARGET:}"
 COMPONENT_PATH="${COMPONENT_PATH:-cFS}"
 CATEGORY="${CATEGORY:-}"
 MAKE_COMMAND="${MAKE_COMMAND:-}"
@@ -34,15 +35,21 @@ codeql --version
 echo "Creating CodeQL database..."
 cd "$COMPONENT_PATH" || exit
 codeql database create codeql-db --language=cpp --source-root=.
-
-echo "Performing Coding Standard CodeQL analysis..."
-codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
-mv Codeql-coding-standard.sarif .
 echo "$(pwd)"
 ls -a
 
-echo "Performing Security CodeQL analysis..."
-codeql database analyze codeql-db ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
-../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
---format=sarif-latest --output=Codeql-security.sarif 
-mv Codeql-security.sarif .
+if [ "$TARGET" = "coding-standard" ]; then
+  echo "Performing Coding Standard CodeQL analysis..."
+  codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
+  mv Codeql-coding-standard.sarif .
+  echo "$(pwd)"
+  ls -a
+fi
+
+if [ "$TARGET" = "security" ]; then
+  echo "Performing Security CodeQL analysis..."
+  codeql database analyze codeql-db ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
+  ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
+  --format=sarif-latest --output=Codeql-security.sarif 
+  mv Codeql-security.sarif .
+fi
