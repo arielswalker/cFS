@@ -5,6 +5,11 @@ STRICT_DIR_LIST="${STRICT_DIR_LIST:-}"
 CMAKE_PROJECT_OPTIONS="${CMAKE_PROJECT_OPTIONS:-}"
 CPPCHECK_XSLT_PATH="${CPPCHECK_XSLT_PATH:-nasa/cFS/main/.github/scripts}"
 
+
+echo "STRICT_DIR_LIST: $STRICT_DIR_LIST"
+echo "CMAKE_PROJECT_OPTIONS: $CMAKE_PROJECT_OPTIONS"
+echo "CPPCHECK_XSLT_PATH: $CPPCHECK_XSLT_PATH"
+
 # Install dependencies
 echo "Installing cppcheck and xsltproc..."
 sudo apt-get update
@@ -35,6 +40,7 @@ cppcheck --force --inline-suppr --xml $CPPCHECK_OPTS 2> cppcheck_err.xml
 if [ -n "$STRICT_DIR_LIST" ]; then
   echo "Running strict cppcheck..."
   cd $(pwd)/source
+  echo "$STRICT_DIR_LIST"
   cppcheck --force --inline-suppr --std=c99 --language=c --enable=warning,performance,portability,style --suppress=variableScope --inconclusive --xml $STRICT_DIR_LIST 2>  ../strict_cppcheck_err.xml
 
   echo "Merging cppcheck results..."
