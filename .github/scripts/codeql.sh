@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 # Input parameters
-TARGETS="${TARGETS:-}"
+TARGET="${TARGET:-}"
 COMPONENT_PATH="${COMPONENT_PATH:-cFS}"
 CATEGORY="${CATEGORY:-}"
 MAKE_COMMAND="${MAKE_COMMAND:-}"
@@ -34,14 +34,14 @@ tar -xzvf codeql-bundle.tar.gz
 export PATH="$PATH:$(pwd)/codeql"
 codeql --version
 
-if [ "$TARGETS" = "coding-standard" ]; then
+if [ "$TARGET" = "coding-standard" ]; then
     echo "Performing Coding Standard CodeQL analysis..."
     cd "$COMPONENT_PATH" || exit
     codeql database create codeql-db --language=cpp --source-root=.
     codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
 fi
 
-if [ "$TARGETS" = "coding-standard" ]; then
+if [ "$TARGET" = "coding-standard" ]; then
     echo "Performing Security CodeQL analysis..."
     codeql database analyze codeql-db qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
     qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
