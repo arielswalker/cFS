@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 # Input parameters
-TARGET="${TARGET:}"
+TARGET="${TARGET:-}"
 COMPONENT_PATH="${COMPONENT_PATH:-cFS}"
 CATEGORY="${CATEGORY:-}"
 MAKE_COMMAND="${MAKE_COMMAND:-}"
