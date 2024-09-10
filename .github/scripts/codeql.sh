@@ -15,6 +15,15 @@ export OMIT_DEPRECATED=true
 export BUILDTYPE="release"
 export REPO="$(basename "$(pwd)")"
 
+echo "Component Path: $COMPONENT_PATH"
+echo "CATEGORY: $CATEGORY"
+echo "Build PDF: $BUILD_PDF"
+echo "MAKE_COMMAND: $MAKE_COMMAND"
+echo "PREP_COMMAND: $PREP_COMMAND"
+echo "SETUP_COMMAND: $SETUP_COMMAND"
+echo "TEST_FLAG: $TEST_FLAG"
+
+
 echo "Setting up build system..."
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
