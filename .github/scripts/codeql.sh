@@ -15,18 +15,11 @@ export OMIT_DEPRECATED=true
 export BUILDTYPE="release"
 export REPO="$(basename "$(pwd)")"
 
-
-BUILD_DIRECTORY="$(pwd)"
-ls
-
-# Setup build system
 echo "Setting up build system..."
-cd "$BUILD_DIRECTORY"
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
 
-# Build the project
-echo "Building the project..."
+echo "Building..."
 eval "$MAKE_COMMAND"
 
 # Initialize CodeQL
@@ -37,13 +30,12 @@ tar -xzvf codeql-bundle.tar.gz
 export PATH=$PATH:codeql
 codeql --version
 
-# Perform CodeQL Analysis
 echo "Performing CodeQL analysis..."
+cd "$COMPONENT_PATH" || exit
 ls -a
 codeql database create codeql-db --language=cpp --source-root=.
 codeql analyze codeql-db --config-file=.github/codeql/codeql-security.yml --output=results.sarif
 
-# Rename SARIF files
 echo "Renaming SARIF files..."
 # Assuming SARIF files are located in a directory named 'CodeQL-Sarif'
 for scan_type in "security" "coding-standard"; do
@@ -51,7 +43,6 @@ for scan_type in "security" "coding-standard"; do
     sed -i "s/\"name\" : \"CodeQL\"/\"name\" : \"CodeQL-${scan_type}\"/g" "CodeQL-Sarif-${scan_type}/Codeql-${scan_type}.sarif"
 done
 
-# Filter SARIF files
 echo "Filtering SARIF files..."
 # Use the `filter-sarif` utility to filter SARIF files
 # Replace with actual filter command
