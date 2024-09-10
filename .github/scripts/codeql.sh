@@ -41,7 +41,7 @@ if [ "$TARGET" = "coding-standard" ]; then
     codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
 fi
 
-if [ "$TARGET" = "coding-standard" ]; then
+if [ "$TARGET" = "security" ]; then
     echo "Performing Security CodeQL analysis..."
     codeql database analyze codeql-db qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
     qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
