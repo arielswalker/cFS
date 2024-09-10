@@ -41,7 +41,6 @@ ls -a
 if [ "$TARGET" = "coding-standard" ]; then
   echo "Performing Coding Standard CodeQL analysis..."
   codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
-  mv Codeql-coding-standard.sarif .
   echo "$(pwd)"
   ls -a
 fi
@@ -51,5 +50,6 @@ if [ "$TARGET" = "security" ]; then
   codeql database analyze codeql-db ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
   ../codeql/qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
   --format=sarif-latest --output=Codeql-security.sarif 
-  mv Codeql-security.sarif .
+  echo "$(pwd)"
+  ls -a
 fi
