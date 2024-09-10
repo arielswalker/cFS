@@ -39,8 +39,9 @@ codeql --version
 
 # Perform CodeQL Analysis
 echo "Performing CodeQL analysis..."
+ls -a
 codeql database create codeql-db --language=cpp --source-root=.
-codeql analyze codeql-db --config-file=nasa/cFS/.github/codeql/codeql-security.yml --output=results.sarif
+codeql analyze codeql-db --config-file=.github/codeql/codeql-security.yml --output=results.sarif
 
 # Rename SARIF files
 echo "Renaming SARIF files..."
