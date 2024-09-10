@@ -1,6 +1,7 @@
 #!/bin/bash
 set -ex
 # Input parameters
+TARGETS="${TARGETS:-}"
 COMPONENT_PATH="${COMPONENT_PATH:-cFS}"
 CATEGORY="${CATEGORY:-}"
 MAKE_COMMAND="${MAKE_COMMAND:-}"
@@ -31,31 +32,16 @@ tar -xzvf codeql-bundle.tar.gz
 export PATH="$PATH:$(pwd)/codeql"
 codeql --version
 
-echo "Performing CodeQL analysis..."
-cd "$COMPONENT_PATH" || exit
-codeql database create codeql-db --language=cpp --source-root=.
-codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=security-results.sarif 
+if [ "$TARGETS" = "coding-standard" ]; then
+    echo "Performing Coding Standard CodeQL analysis..."
+    cd "$COMPONENT_PATH" || exit
+    codeql database create codeql-db --language=cpp --source-root=.
+    codeql database analyze codeql-db ../.github/codeql/jpl-misra.qls --format=sarif-latest --output=Codeql-coding-standard.sarif
+fi
 
-
-
-echo "Renaming SARIF files..."
-# Assuming SARIF files are located in a directory named 'CodeQL-Sarif'
-for scan_type in "security" "coding-standard"; do
-    mv "CodeQL-Sarif-${scan_type}/cpp.sarif" "CodeQL-Sarif-${scan_type}/Codeql-${scan_type}.sarif"
-    sed -i "s/\"name\" : \"CodeQL\"/\"name\" : \"CodeQL-${scan_type}\"/g" "CodeQL-Sarif-${scan_type}/Codeql-${scan_type}.sarif"
-done
-
-echo "Filtering SARIF files..."
-# Use the `filter-sarif` utility to filter SARIF files
-# Replace with actual filter command
-# filter-sarif --input CodeQL-Sarif-${scan_type}/Codeql-${scan_type}.sarif --output CodeQL-Sarif-${scan_type}/Codeql-${scan_type}.sarif
-
-# Archive SARIF files
-echo "Archiving SARIF files..."
-# Replace with actual archiving command
-# tar -czf "CodeQL-Sarif-${scan_type}.tar.gz" "CodeQL-Sarif-${scan_type}"
-
-# Upload SARIF files
-echo "Uploading SARIF files..."
-# Replace with actual upload command
-# upload-sarif --file CodeQL-Sarif-${scan_type}/Codeql-${scan_type}.sarif
+if [ "$TARGETS" = "coding-standard" ]; then
+    echo "Performing Security CodeQL analysis..."
+    codeql database analyze codeql-db qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-and-quality.qls \
+    qlpacks/codeql/cpp-queries/1.2.2/codeql-suites/cpp-security-extended.qls \
+    --format=sarif-latest --output=Codeql-security.sarif 
+fi
