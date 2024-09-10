@@ -39,9 +39,6 @@ codeql --version
 
 # Perform CodeQL Analysis
 echo "Performing CodeQL analysis..."
-ls
-cd codeql
-ls
 codeql database create codeql-db --language=cpp --source-root=.
 codeql analyze codeql-db --config-file=nasa/cFS/.github/codeql/codeql-security.yml --output=results.sarif
 
