@@ -15,15 +15,6 @@ export OMIT_DEPRECATED=true
 export BUILDTYPE="release"
 export REPO="$(basename "$(pwd)")"
 
-echo "Component Path: $COMPONENT_PATH"
-echo "CATEGORY: $CATEGORY"
-echo "Build PDF: $BUILD_PDF"
-echo "MAKE_COMMAND: $MAKE_COMMAND"
-echo "PREP_COMMAND: $PREP_COMMAND"
-echo "SETUP_COMMAND: $SETUP_COMMAND"
-echo "TEST_FLAG: $TEST_FLAG"
-
-
 echo "Setting up build system..."
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
@@ -36,7 +27,7 @@ echo "Initializing CodeQL..."
 # Download CodeQL CLI
 wget https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.18.4/codeql-bundle.tar.gz
 tar -xzvf codeql-bundle.tar.gz
-export PATH=$PATH:codeql
+export PATH="$PATH:$(pwd)/codeql"
 codeql --version
 
 echo "Performing CodeQL analysis..."
