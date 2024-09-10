@@ -16,16 +16,6 @@ export OMIT_DEPRECATED=true
 export BUILDTYPE="release"
 export REPO="$(basename "$(pwd)")"
 
-
-if [ "$COMPONENT_PATH" != "cFS" ]; then
-  echo "Handling component path setup..."
-  git log -1 --pretty=oneline
-  git submodule
-  rm -r .git
-  rm -rf "$COMPONENT_PATH"
-  ln -s "$(pwd)" "$COMPONENT_PATH"
-fi
-
 echo "Setting up build system..."
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
