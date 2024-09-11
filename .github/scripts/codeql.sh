@@ -9,20 +9,14 @@ PREP_COMMAND="${PREP_COMMAND:-make prep}"
 SETUP_COMMAND="${SETUP_COMMAND:-cp cfe/cmake/Makefile.sample Makefile && cp -r cfe/cmake/sample_defs sample_defs}"
 TEST_FLAG="${TEST_FLAG:-false}"
 
-# Environment Variables
-export SIMULATION="native"
-export ENABLE_UNIT_TESTS="$TEST_FLAG"
-export OMIT_DEPRECATED=true
-export BUILDTYPE="release"
-export REPO="$(basename "$(pwd)")"
-
+ls -a
 echo "Setting up build system..."
 eval "$SETUP_COMMAND"
 eval "$PREP_COMMAND"
 
 echo "Building..."
 eval "$MAKE_COMMAND"
-ls -a
+
 
 # Initialize CodeQL
 echo "Initializing CodeQL..."
