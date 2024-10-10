@@ -57,6 +57,7 @@ jobs:
       - name: Run bundle cppcheck
         if: ${{matrix.cppcheck =='bundle'}}
         run: |
+          ls
           cppcheck --addon=misra --force --inline-suppr --quiet . --xml 2> ${{matrix.cppcheck}}_cppcheck_err.xml
           cppcheck --addon=misra --force --inline-suppr --quiet . 2> ${{matrix.cppcheck}}_cppcheck_err.txt
 
