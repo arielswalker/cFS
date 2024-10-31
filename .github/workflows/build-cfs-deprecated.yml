@@ -63,7 +63,10 @@ jobs:
 
       - name: Check versions
         run: git submodule
-
+        
+      - name: Install Dependencies
+        run: sudo apt-get install gcc gcov -y
+        
       - name: Check gcc version 
         run: |
           gcc -v
