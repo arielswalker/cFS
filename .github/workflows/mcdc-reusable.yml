@@ -70,15 +70,16 @@ jobs:
         run: make SIMULATION=native CC="gcc -O0 -fprofile-arcs --coverage -fcondition-coverage" CXX="g++  -O0 -fprofile-arcs --coverage -fcondition-coverage" ENABLE_UNIT_TESTS=true prep
 
       - name: Build app build dependencies
+        if: ${{ inputs.app-name != '' }}
         run: make -C build/tools/elf2cfetbl
 
       - name: Build app target
+        if: ${{ inputs.app-name != '' }}
         run: |
           make -C build/native/default_cpu1/apps/$APP_LOWER
 
       - name: Run test
-        run: |
-          (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt
+        run: make test
 
       - name: Archive results
         # Upload if success or failure which supports skipping, unlike always()
