@@ -44,9 +44,6 @@ jobs:
     container: ghcr.io/arielswalker/mcdc:latest
 
     steps:
-      - name: Install coverage tools
-        run: sudo apt-get install lcov -y
-
       - name: Set up environment variables
         # Apps typically use lowercase targets and uppercase names, this logic is fragile but works
         run: |
