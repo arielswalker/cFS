@@ -36,6 +36,7 @@ jobs:
     if: ${{ needs.checks-for-duplicates.outputs.should_skip != 'true' || contains(github.ref, 'main') }}
     name: Build and Run MCDC
     runs-on: ubuntu-20.04
+    container: ghcr.io/arielswalker/mcdc:latest
 
     steps:
     # Add to dockerfile
