@@ -45,10 +45,10 @@ jobs:
 
     steps:
     # Add to dockerfile
-      - name: Set up Git
+      - name: Set up dependencies 
         run: |
           apt-get update
-          apt-get install -y git
+          apt-get install -y git cmake
       
       - name: Set up environment variables
         # Apps typically use lowercase targets and uppercase names, this logic is fragile but works
