@@ -45,10 +45,6 @@ jobs:
 
     steps:
     # Add to dockerfile
-      - name: Check Git version
-        run: git --version
-    
-    # Add to dockerfile
       - name: Set up Git
         run: |
           apt-get update
