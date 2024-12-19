@@ -8,7 +8,7 @@ on:
         description: Application name, if different from repo name
         type: string
         required: false
-        default: ${{ github.event.repository.name }}      
+        default: ''   
       cache-key:
         description: Cache key to use
         type: string
