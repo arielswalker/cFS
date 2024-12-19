@@ -81,11 +81,11 @@ jobs:
         run: |
           cp ./cfe/cmake/Makefile.sample Makefile
           cp -r ./cfe/cmake/sample_defs sample_defs
-
+          
       - name: Add Repo To Build
-        run: |
-          sed -i "/list(APPEND MISSION_GLOBAL_APPLIST/a list(APPEND MISSION_GLOBAL_APPLIST $APP_LOWER)" sample_defs/targets.cmake
-
+        if: ${{ inputs.app-name != '' }}
+        run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
+        
       - name: Make Prep
         run: make SIMULATION=native CC="gcc -O0 -fprofile-arcs --coverage -fcondition-coverage" CXX="g++  -O0 -fprofile-arcs --coverage -fcondition-coverage" ENABLE_UNIT_TESTS=true prep
 
