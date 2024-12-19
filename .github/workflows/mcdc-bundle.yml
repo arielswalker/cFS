@@ -29,5 +29,3 @@ jobs:
     needs: checks-for-duplicates
     name: MCDC    
     uses: arielswalker/cFS/.github/workflows/mcdc-reusable.yml@test-mcdc
-    with:
-      cache-key: cfs-doc-${{ github.run_number }}
