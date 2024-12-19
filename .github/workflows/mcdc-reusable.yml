@@ -69,6 +69,10 @@ jobs:
       - name: Make Prep
         run: make SIMULATION=native CC="gcc -O0 -fprofile-arcs --coverage -fcondition-coverage" CXX="g++  -O0 -fprofile-arcs --coverage -fcondition-coverage" ENABLE_UNIT_TESTS=true prep
 
+      - name: Make Install 
+        if: ${{ inputs.app-name == '' }}
+        run: make install
+        
       - name: Build app build dependencies
         if: ${{ inputs.app-name != '' }}
         run: make -C build/tools/elf2cfetbl
