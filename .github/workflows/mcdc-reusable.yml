@@ -84,6 +84,11 @@ jobs:
 
       - name: Run test
         run: make test
+        
+# to do pull modules 
+# call script to show mcdc coverage 
+
+# add gcov files and summary as archive 
 
       - name: Archive results
         # Upload if success or failure which supports skipping, unlike always()
