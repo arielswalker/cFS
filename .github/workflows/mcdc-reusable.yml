@@ -9,11 +9,6 @@ on:
         type: string
         required: false
         default: ''   
-      cache-key:
-        description: Cache key to use
-        type: string
-        required: false
-        default: ''
 
 # Force bash to apply pipefail option so pipeline failures aren't masked
 defaults:
@@ -41,7 +36,6 @@ jobs:
     if: ${{ needs.checks-for-duplicates.outputs.should_skip != 'true' || contains(github.ref, 'main') }}
     name: Build and Run MCDC
     runs-on: ubuntu-20.04
-    container: ghcr.io/arielswalker/mcdc:latest
 
     steps:
     # Add to dockerfile
@@ -56,16 +50,7 @@ jobs:
           echo "APP_UPPER=$(echo ${{ inputs.app-name }} | sed 's/[a-z]/\U&/g')" >> $GITHUB_ENV
           echo "APP_LOWER=$(echo ${{ inputs.app-name }} | sed 's/[A-Z]/\L&/g')" >> $GITHUB_ENV
           
-      - name: Get cache if supplied
-        id: cache-src-bld
-        if: ${{ inputs.cache-key != '' }}
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/*
-          key: ${{ inputs.cache-key }}
-          
       - name: Checkout Bundle Main
-        if: ${{ inputs.app-name != '' }}
         uses: actions/checkout@v4
         with:
           submodules: true
@@ -79,8 +64,6 @@ jobs:
 
       - name: Copy Files
         run: |
-          ls
-          pwd
           cp ./cfe/cmake/Makefile.sample Makefile
           cp -r ./cfe/cmake/sample_defs sample_defs
           
