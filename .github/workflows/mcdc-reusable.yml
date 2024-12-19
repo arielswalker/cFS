@@ -8,7 +8,12 @@ on:
         description: Application name, if different from repo name
         type: string
         required: false
-        default: ${{ github.event.repository.name }}
+        default: ${{ github.event.repository.name }}      
+      cache-key:
+        description: Cache key to use
+        type: string
+        required: false
+        default: ''
 
 # Force bash to apply pipefail option so pipeline failures aren't masked
 defaults:
@@ -48,16 +53,26 @@ jobs:
           echo "APP_UPPER=$(echo ${{ inputs.app-name }} | sed 's/[a-z]/\U&/g')" >> $GITHUB_ENV
           echo "APP_LOWER=$(echo ${{ inputs.app-name }} | sed 's/[A-Z]/\L&/g')" >> $GITHUB_ENV
 
+      - name: Get cache if supplied
+        id: cache-src-bld
+        if: ${{ inputs.cache-key != '' }}
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/*
+          key: ${{ inputs.cache-key }}
+
       - name: Checkout Bundle Main
+        if: ${{ inputs.app-name != '' }}
         uses: actions/checkout@v4
         with:
           submodules: true
           repository: nasa/cFS
 
       - name: Checkout Repo
+        if: ${{ inputs.app-name != '' }}
         uses: actions/checkout@v4
         with:
-          path: apps/${{  env.APP_LOWER  }}
+          path: apps/${{ inputs.app-name }}
 
       - name: Copy Files
         run: |
