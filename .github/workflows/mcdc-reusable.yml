@@ -76,6 +76,7 @@ jobs:
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
         run: |
+          echo "BASE_DIR=build/native/default_cpu1" >> $GITHUB_ENV
           (make test) | tee test_results.txt
         
       - name: Build app build dependencies
@@ -89,8 +90,12 @@ jobs:
           
       - name: Run app test
         if: ${{ inputs.app-name != '' }}
-        run: |
+        run: |          
+          echo "BASE_DIR=build/native/default_cpu1/apps/$APP_LOWER" >> $GITHUB_ENV
           (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt
+
+      - name: Run mcdc analysis
+        run: ../script/mcdc-analyze.sh
         
 # to do pull test modules 
 # call script to show mcdc coverage 
@@ -102,6 +107,6 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: Unit test and coverage results
+          name: Unit test results
           path: |
             test_results.txt
