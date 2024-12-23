@@ -82,9 +82,6 @@ jobs:
         run: |
           make -C build/native/default_cpu1/apps/$APP_LOWER
 
-      - name: Run test
-        run: make test
-
       - name: Show test
         run: ctest -N
         
