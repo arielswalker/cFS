@@ -118,3 +118,4 @@ jobs:
           name: Unit test results
           path: |
             test_results.txt
+            **/*.gcov
