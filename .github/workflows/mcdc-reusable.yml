@@ -84,6 +84,9 @@ jobs:
 
       - name: Run test
         run: make test
+
+      - name: Show test
+        run: ctest -N
         
 # to do pull modules 
 # call script to show mcdc coverage 
