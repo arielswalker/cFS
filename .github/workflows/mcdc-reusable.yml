@@ -95,7 +95,8 @@ jobs:
           (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt
 
       - name: Run mcdc analysis
-        run: ../script/mcdc-analyze.sh
+        if: success() || failure()
+        run: ../scripts/mcdc-analyze.sh
         
 # to do pull test modules 
 # call script to show mcdc coverage 
