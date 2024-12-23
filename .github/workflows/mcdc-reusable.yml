@@ -62,16 +62,21 @@ jobs:
           cp ./cfe/cmake/Makefile.sample Makefile
           cp -r ./cfe/cmake/sample_defs sample_defs
           
-      - name: Add Repo To Build
+      - name: Add repo to build
         if: ${{ inputs.app-name != '' }}
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
         
-      - name: Make Prep
+      - name: Make prep
         run: make SIMULATION=native CC="gcc -O0 -fprofile-arcs --coverage -fcondition-coverage" CXX="g++  -O0 -fprofile-arcs --coverage -fcondition-coverage" ENABLE_UNIT_TESTS=true prep
 
-      - name: Make Install 
+      - name: Make install 
         if: ${{ inputs.app-name == '' }}
         run: make install
+
+      - name: Make test 
+        if: ${{ inputs.app-name == '' }}
+        run: |
+          (make test) | tee test_results.txt
         
       - name: Build app build dependencies
         if: ${{ inputs.app-name != '' }}
@@ -81,11 +86,13 @@ jobs:
         if: ${{ inputs.app-name != '' }}
         run: |
           make -C build/native/default_cpu1/apps/$APP_LOWER
-
-      - name: Show test
-        run: ctest -N
+          
+      - name: Run app test
+        if: ${{ inputs.app-name != '' }}
+        run: |
+          (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt
         
-# to do pull modules 
+# to do pull test modules 
 # call script to show mcdc coverage 
 
 # add gcov files and summary as archive 
