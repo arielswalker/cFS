@@ -10,6 +10,15 @@ overall_file_count=0  # Total number of files processed across all modules
 overall_no_conditions_count=0  # Counter for files with no condition data across all modules
 module_count=0  # To track the number of modules processed
 
+for dir in $subdirs; do
+    echo "Directory: $BASE_DIR"
+    # Output the current subdirectory/module
+    echo "Processing $dir module..."
+    
+    # Find all '.gcda' files in the subdirectory, convert to '.c' and run gcov
+    find "$BASE_DIR/$dir" -name '*.gcda' | sed 's/\.gcda$/.c/' | xargs -I {} sh -c 'gcov -abcg {} | sed "/\.h/,/^$/d"'
+done
+
 # Loop over each subdir/module
 for dir in $subdirs; do
     echo "Processing $dir module..."
