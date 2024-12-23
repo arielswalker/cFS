@@ -43,7 +43,7 @@ jobs:
       - name: Set up dependencies 
         run: |
           apt-get update
-          apt-get install -y git cmake lcov
+          apt-get install -y git cmake lcov python3
       
       - name: Checkout Bundle Main
         uses: actions/checkout@v4
