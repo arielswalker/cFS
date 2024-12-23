@@ -96,7 +96,7 @@ jobs:
 
       - name: Run mcdc analysis
         if: success() || failure()
-        run: python3 .github/scripts/mcdc-analyze.sh
+        run: bash .github/scripts/mcdc-analyze.sh
         
 # to do pull test modules 
 # call script to show mcdc coverage 
