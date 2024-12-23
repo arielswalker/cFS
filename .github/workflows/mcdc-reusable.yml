@@ -44,7 +44,14 @@ jobs:
         run: |
           apt-get update
           apt-get install -y git cmake lcov python3
-      
+          
+      - name: Debug gcc
+        run: |
+          gcc -v
+          gcov -v
+          which gcc
+          which gcov
+            
       - name: Checkout Bundle Main
         uses: actions/checkout@v4
         with:
