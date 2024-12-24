@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Automatically extract subdirectories/modules under the base directory
-subdirs=$(find "$BASE_DIR" -mindepth 1 -maxdepth 1 -type d | sed "s|^$BASE_DIR/||")
+# This command grabs folder names in base_dir
+# subdirs=$(find "$BASE_DIR" -mindepth 1 -maxdepth 1 -type d | sed "s|^$BASE_DIR/||")
+# This command grabs file names inside base_dir, does not grab file names inside child folders
+subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
 
 # Initialize overall counters
 overall_total_functions=0  # To accumulate the total number of functions across all modules
