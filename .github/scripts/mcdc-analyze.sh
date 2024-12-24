@@ -28,7 +28,6 @@ for dir in $subdirs; do
     # Check if the module directories are found
     if [ -n "$module_dirs" ]; then
         echo "Found the following module directories for $module_name:"
-        echo "$module_dirs"  # Output all found directories for this module
     else
         echo "No directories found for $module_name inside build/native/default_cpu1."
     fi
