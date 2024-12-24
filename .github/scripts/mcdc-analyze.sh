@@ -6,6 +6,7 @@
 # This command grabs file names inside base_dir, does not grab file names inside child folders
 subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
 
+
 # Initialize overall counters
 overall_total_functions=0  # To accumulate the total number of functions across all modules
 overall_total_covered_functions=0  # To accumulate the total number of covered functions across all modules
@@ -14,17 +15,21 @@ overall_no_conditions_count=0  # Counter for files with no condition data across
 module_count=0  # To track the number of modules processed
 
 for dir in $subdirs; do
-    echo "Directory: $BASE_DIR"
-    # Output the current subdirectory/module
-    echo "Processing $dir module..."
+    # Get just the module name (strip the parent directory structure)
+    module_name=$(basename "$dir")
     
-    # Find all '.gcda' files in the subdirectory, convert to '.c' and run gcov
-    find "$BASE_DIR/$dir" -name '*.gcda' | sed 's/\.gcda$/.c/' | xargs -I {} sh -c 'gcov -abcg {} | sed "/\.h/,/^$/d"'
+    # Output the current module name
+    echo "Processing $module_name module..."
+    
+    # Find all '.gcda' files in the module directory, convert to '.c' and run gcov
+    find "build/native/default_cpu1/$module_name" -name '*.gcda' | sed 's/\.gcda$/.c/' | xargs -I {} sh -c 'gcov -abcg {} | sed "/\.h/,/^$/d"'
 done
 
 # Loop over each subdir/module
 for dir in $subdirs; do
-    echo "Processing $dir module..."
+    # Get just the module name (strip the parent directory structure)
+    module_name=$(basename "$dir")
+    echo "Processing $module_name module..."
     
     # Initialize module-level counters for each module
     total_functions=0  # To accumulate total functions in the module
