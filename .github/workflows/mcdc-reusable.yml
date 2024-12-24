@@ -10,6 +10,14 @@ on:
         required: false
         default: ''   
 
+env:
+  SIMULATION: native
+  OMIT_DEPRECATED: true
+  ENABLE_UNIT_TESTS: true
+  CTEST_OUTPUT_ON_FAILURE: true
+  GCC: gcc -ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path
+  CXX: g++  -ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path
+  
 # Force bash to apply pipefail option so pipeline failures aren't masked
 defaults:
   run:
@@ -74,7 +82,7 @@ jobs:
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
         
       - name: Make prep
-        run: make SIMULATION=native CC="gcc -ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path" CXX="g++  -ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path" ENABLE_UNIT_TESTS=true prep
+        run: make prep
 
       - name: Make install 
         if: ${{ inputs.app-name == '' }}
