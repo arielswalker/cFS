@@ -22,18 +22,15 @@ for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
     
-    # Remove '-testrunner' from the module name if it ends with it
-    module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
-    
-    # Search for the module-name.dir folder inside build/native/default_cpu1
-    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name_no_testrunner}.dir")
+    # Search for the module-name.dir folder inside build/native/default_cpu1 (with -testrunner)
+    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
     
     # Check if the module directories are found
     if [ -n "$module_dirs" ]; then
-        echo "Found the following module directories for $module_name_no_testrunner:"
+        echo "Found the following module directories for $module_name:"
         echo "$module_dirs"
     else
-        echo "No directories found for $module_name_no_testrunner inside build/native/default_cpu1."
+        echo "No directories found for $module_name inside build/native/default_cpu1."
     fi
 done
 
@@ -42,14 +39,14 @@ for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
     
-    # Remove '-testrunner' from the module name if it ends with it
+    # Remove '-testrunner' from the module name for gcda search
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
     
     # Output the current module name
-    echo "Processing $module_name_no_testrunner module..."
+    echo "Processing $module_name module..."
     
-    # Search for the module-name.dir folder inside build/native/default_cpu1
-    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name_no_testrunner}.dir")
+    # Search for the module-name.dir folder inside build/native/default_cpu1 (with -testrunner)
+    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
 
     # Check if the module directory is found
     if [ -n "$module_dirs" ]; then
@@ -79,13 +76,14 @@ for dir in $subdirs; do
                     gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
                 done
             else
-                echo "No .gcda files found for $module_name_no_testrunner under parent directory $parent_dir."
+                echo "No .gcda files found for $original_module_name under parent directory $parent_dir."
             fi
         done
     else
-        echo "Directory for module $module_name_no_testrunner (e.g., ${module_name_no_testrunner}.dir) not found inside build/native/default_cpu1."
+        echo "Directory for module $original_module_name (e.g., ${module_name}.dir) not found inside build/native/default_cpu1."
     fi
 done
+
 
 # Loop over each subdir/module
 for dir in $subdirs; do
