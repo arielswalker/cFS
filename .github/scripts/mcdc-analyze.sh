@@ -22,6 +22,9 @@ for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
     
+    # Remove '-testrunner' from the module name if it ends with it
+    module_name=$(echo "$module_name" | sed 's/-testrunner$//')
+    
     # Search for the module-name.dir folder inside build/native/default_cpu1
     module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
     
