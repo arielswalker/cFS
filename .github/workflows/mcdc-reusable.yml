@@ -76,7 +76,13 @@ jobs:
         run: |
           cp ./cfe/cmake/Makefile.sample Makefile
           cp -r ./cfe/cmake/sample_defs sample_defs
-          
+       
+      - name: Configure CMake with coverage flags
+        run: |
+          cmake .. \
+            -DCMAKE_CXX_FLAGS="-ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path" \
+            -DCMAKE_C_FLAGS="-ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path"
+            
       - name: Add repo to build
         if: ${{ inputs.app-name != '' }}
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
