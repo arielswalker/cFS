@@ -21,30 +21,39 @@ for dir in $subdirs; do
     echo "Processing $module_name module..."
     
     # Search for the module-name.dir folder inside build/native/default_cpu1
+    echo "Searching for ${module_name}.dir folder inside build/native/default_cpu1..."
     module_dir=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir" -print -quit)
     
     # Check if the module directory is found
     if [ -n "$module_dir" ]; then
-        # Find all '.gcda' files in the module directory
+        echo "Found module directory: $module_dir"
+        
+        # Find all '.gcda' files in the module directory (recursively)
+        echo "Searching for .gcda files in $module_dir..."
         gcda_files=$(find "$module_dir" -name '*.gcda')
         
         # If there are any .gcda files, run gcov on them
         if [ -n "$gcda_files" ]; then
+            echo "Found .gcda files. Processing them..."
             for gcda_file in $gcda_files; do
                 # Convert the .gcda file to its corresponding .c file
                 c_file=$(echo "$gcda_file" | sed 's/\.gcda$/.c/')
                 
+                # Output the corresponding .c file path
+                echo "Processing corresponding .c file: $c_file"
+                
                 # Run gcov and output the results
-                echo "Processing $c_file..."
+                echo "Running gcov on $c_file..."
                 gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
             done
         else
-            echo "No .gcda files found for $module_name."
+            echo "No .gcda files found for $module_name in $module_dir."
         fi
     else
-        echo "Directory for module $module_name (e.g., ${module_name}.dir) not found."
+        echo "Directory for module $module_name (e.g., ${module_name}.dir) not found inside build/native/default_cpu1."
     fi
 done
+
 
 
 # Loop over each subdir/module
