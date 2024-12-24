@@ -51,10 +51,13 @@ for dir in $subdirs; do
         for module_dir in $module_dirs; do
             echo "Found module directory: $module_dir"
             
-            # Find all '.gcda' files in the module directory (recursively)
-            echo "Searching for .gcda files in $module_dir..."
-            gcda_files=$(find "$module_dir" -name '*.gcda')
+            # Get the parent directory of the module directory
+            parent_dir=$(dirname "$module_dir")
             
+            # Find all '.gcda' files in any nested folder under the parent directory of module_name.dir
+            echo "Searching for .gcda files under parent directory: $parent_dir..."
+            gcda_files=$(find "$parent_dir" -type f -name '*.gcda')
+
             # If there are any .gcda files, run gcov on them
             if [ -n "$gcda_files" ]; then
                 echo "Found .gcda files. Processing them..."
@@ -70,15 +73,13 @@ for dir in $subdirs; do
                     gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
                 done
             else
-                echo "No .gcda files found for $module_name in $module_dir."
+                echo "No .gcda files found for $module_name under parent directory $parent_dir."
             fi
         done
     else
         echo "Directory for module $module_name (e.g., ${module_name}.dir) not found inside build/native/default_cpu1."
     fi
 done
-
-
 
 # Loop over each subdir/module
 for dir in $subdirs; do
