@@ -79,6 +79,7 @@ jobs:
        
       - name: Configure CMake with coverage flags
         run: |
+          cd build/native/default_cpu1
           cmake .. \
             -DCMAKE_CXX_FLAGS="-ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path" \
             -DCMAKE_C_FLAGS="-ftest-coverage -fprofile-arcs -fcondition-coverage -fprofile-abs-path"
@@ -88,11 +89,11 @@ jobs:
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
         
       - name: Make prep
-        run: make prep
+        run: make prep VERBOSE=1
 
       - name: Make install 
         if: ${{ inputs.app-name == '' }}
-        run: make install
+        run: make install VERBOSE=1
 
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
