@@ -6,7 +6,6 @@
 # This command grabs file names inside base_dir, does not grab file names inside child folders
 subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
 
-
 # Initialize overall counters
 overall_total_functions=0  # To accumulate the total number of functions across all modules
 overall_total_covered_functions=0  # To accumulate the total number of covered functions across all modules
@@ -21,9 +20,32 @@ for dir in $subdirs; do
     # Output the current module name
     echo "Processing $module_name module..."
     
-    # Find all '.gcda' files in the module directory, convert to '.c' and run gcov
-    find "build/native/default_cpu1/$module_name" -name '*.gcda' | sed 's/\.gcda$/.c/' | xargs -I {} sh -c 'gcov -abcg {} | sed "/\.h/,/^$/d"'
+    # Search for the module-name.dir folder inside build/native/default_cpu1
+    module_dir=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir" -print -quit)
+    
+    # Check if the module directory is found
+    if [ -n "$module_dir" ]; then
+        # Find all '.gcda' files in the module directory
+        gcda_files=$(find "$module_dir" -name '*.gcda')
+        
+        # If there are any .gcda files, run gcov on them
+        if [ -n "$gcda_files" ]; then
+            for gcda_file in $gcda_files; do
+                # Convert the .gcda file to its corresponding .c file
+                c_file=$(echo "$gcda_file" | sed 's/\.gcda$/.c/')
+                
+                # Run gcov and output the results
+                echo "Processing $c_file..."
+                gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
+            done
+        else
+            echo "No .gcda files found for $module_name."
+        fi
+    else
+        echo "Directory for module $module_name (e.g., ${module_name}.dir) not found."
+    fi
 done
+
 
 # Loop over each subdir/module
 for dir in $subdirs; do
