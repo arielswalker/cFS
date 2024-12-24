@@ -13,6 +13,28 @@ overall_file_count=0  # Total number of files processed across all modules
 overall_no_conditions_count=0  # Counter for files with no condition data across all modules
 module_count=0  # To track the number of modules processed
 
+# First, echo all the module directories before starting the .gcda file processing
+
+# Collect all the module directories
+echo "List of all module directories found inside build/native/default_cpu1:"
+
+for dir in $subdirs; do
+    # Get just the module name (strip the parent directory structure)
+    module_name=$(basename "$dir")
+    
+    # Search for the module-name.dir folder inside build/native/default_cpu1
+    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
+    
+    # Check if the module directories are found
+    if [ -n "$module_dirs" ]; then
+        echo "Found the following module directories for $module_name:"
+        echo "$module_dirs"  # Output all found directories for this module
+    else
+        echo "No directories found for $module_name inside build/native/default_cpu1."
+    fi
+done
+
+# Now, process the .gcda files and run gcov for each module
 for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
@@ -21,34 +43,36 @@ for dir in $subdirs; do
     echo "Processing $module_name module..."
     
     # Search for the module-name.dir folder inside build/native/default_cpu1
-    echo "Searching for ${module_name}.dir folder inside build/native/default_cpu1..."
-    module_dir=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir" -print -quit)
-    
+    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
+
     # Check if the module directory is found
-    if [ -n "$module_dir" ]; then
-        echo "Found module directory: $module_dir"
-        
-        # Find all '.gcda' files in the module directory (recursively)
-        echo "Searching for .gcda files in $module_dir..."
-        gcda_files=$(find "$module_dir" -name '*.gcda')
-        
-        # If there are any .gcda files, run gcov on them
-        if [ -n "$gcda_files" ]; then
-            echo "Found .gcda files. Processing them..."
-            for gcda_file in $gcda_files; do
-                # Convert the .gcda file to its corresponding .c file
-                c_file=$(echo "$gcda_file" | sed 's/\.gcda$/.c/')
-                
-                # Output the corresponding .c file path
-                echo "Processing corresponding .c file: $c_file"
-                
-                # Run gcov and output the results
-                echo "Running gcov on $c_file..."
-                gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
-            done
-        else
-            echo "No .gcda files found for $module_name in $module_dir."
-        fi
+    if [ -n "$module_dirs" ]; then
+        # Iterate over each found directory
+        for module_dir in $module_dirs; do
+            echo "Found module directory: $module_dir"
+            
+            # Find all '.gcda' files in the module directory (recursively)
+            echo "Searching for .gcda files in $module_dir..."
+            gcda_files=$(find "$module_dir" -name '*.gcda')
+            
+            # If there are any .gcda files, run gcov on them
+            if [ -n "$gcda_files" ]; then
+                echo "Found .gcda files. Processing them..."
+                for gcda_file in $gcda_files; do
+                    # Convert the .gcda file to its corresponding .c file
+                    c_file=$(echo "$gcda_file" | sed 's/\.gcda$/.c/')
+                    
+                    # Output the corresponding .c file path
+                    echo "Processing corresponding .c file: $c_file"
+                    
+                    # Run gcov and output the results
+                    echo "Running gcov on $c_file..."
+                    gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
+                done
+            else
+                echo "No .gcda files found for $module_name in $module_dir."
+            fi
+        done
     else
         echo "Directory for module $module_name (e.g., ${module_name}.dir) not found inside build/native/default_cpu1."
     fi
