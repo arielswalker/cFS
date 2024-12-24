@@ -101,7 +101,7 @@ jobs:
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
         run: |
-          echo "BASE_DIR=build/native/exe" >> $GITHUB_ENV
+          echo "BASE_DIR=build/exe/cpu1" >> $GITHUB_ENV
           (make test) | tee test_results.txt
         
       - name: Build app build dependencies
