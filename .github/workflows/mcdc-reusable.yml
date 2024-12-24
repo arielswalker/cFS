@@ -102,7 +102,7 @@ jobs:
         if: ${{ inputs.app-name == '' }}
         run: |
           echo "BASE_DIR=build/exe/cpu1" >> $GITHUB_ENV
-          (make test) | tee test_results.txt
+          (make test VERBOSE=1) | tee test_results.txt
         
       - name: Build app build dependencies
         if: ${{ inputs.app-name != '' }}
