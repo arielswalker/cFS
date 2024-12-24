@@ -79,7 +79,14 @@ jobs:
         run: |
           sed -i '/if (NOT CMAKE_CROSSCOMPILING)/,/\}/s/set(UT_COVERAGE_COMPILE_FLAGS.*/set(UT_COVERAGE_COMPILE_FLAGS -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
           sed -i '/if (NOT CMAKE_CROSSCOMPILING)/,/\}/s/set(UT_COVERAGE_LINK_FLAGS.*/set(UT_COVERAGE_LINK_FLAGS -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
-
+ 
+      - name: Echo edited osal file
+        run: |
+          # Output the entire contents of osal/CMakeLists.txt to verify the changes
+          ls
+          pwd
+          cat osal/src/bsp/generic-linux/build_options.cmake
+          
       - name: Add repo to build
         if: ${{ inputs.app-name != '' }}
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
