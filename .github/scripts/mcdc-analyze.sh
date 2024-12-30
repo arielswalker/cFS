@@ -45,7 +45,6 @@ done
 for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
-    echo "\nProcessing $module_name module..."
 
     # Skip core-cpu1 and queue-test
     if [[ "$module_name" == "core-cpu1" || "$module_name" == "queue-test" ]]; then
@@ -54,6 +53,8 @@ for dir in $subdirs; do
     
     # Remove '-testrunner' from the module name for gcda search
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
+    
+    echo -e "\nProcessing $module_name_no_testrunner module..."
     
     # Initialize module-level counters
     total_functions=0
