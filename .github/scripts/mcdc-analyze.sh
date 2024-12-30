@@ -17,7 +17,7 @@ module_count=0  # To track the number of modules processed
 # To do: make sure all modules are captured 
 
 # Collect all the module directories
-echo "List of all module directories found inside build/native/default_cpu1:"
+echo "List of found modules:"
 for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
@@ -25,10 +25,11 @@ for dir in $subdirs; do
     # Search for the module-name.dir folder inside build/native/default_cpu1 (with -testrunner)
     module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
     
+    module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
+    
     # Check if the module directories are found
-    echo "List of found modules:"
     if [ -n "$module_dirs" ]; then
-        echo "$module_name"
+        echo "$module_name_no_testrunner"
     else
         echo "No directories found for $module_name inside build/native/default_cpu1."
     fi
