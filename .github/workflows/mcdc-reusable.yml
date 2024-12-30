@@ -128,7 +128,7 @@ jobs:
 
 # add gcov files and summary as archive 
 
-      - name: Archive results
+      - name: Archive unit test results
         # Upload if success or failure which supports skipping, unlike always()
         if: success() || failure()
         uses: actions/upload-artifact@v4
@@ -136,4 +136,14 @@ jobs:
           name: Unit test results
           path: |
             test_results.txt
+      
+      - name: Archive mcdc results
+        # Upload if success or failure which supports skipping, unlike always()
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcdc results
+          path: |
             **/*.gcov
+            mcdc_results.txt
+
