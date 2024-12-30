@@ -56,6 +56,10 @@ for dir in $subdirs; do
     
     # Output the current module name
     echo ""
+    echo "test"
+    echo -e "\n"
+    echo "test 2"
+    echo -e "\n\n"
     echo "Processing $module_name_no_testrunner module..."
     
     # Initialize module-level counters
