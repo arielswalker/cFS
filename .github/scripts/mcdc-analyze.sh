@@ -55,7 +55,7 @@ for dir in $subdirs; do
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
     
     # Output the current module name
-    echo
+    echo ""
     echo "Processing $module_name_no_testrunner module..."
     
     # Initialize module-level counters
@@ -88,9 +88,12 @@ for dir in $subdirs; do
                     # Output the corresponding .c file path
                     echo "Processing corresponding .c file: $c_file"
                     
-                    # Run gcov and output the results, ignoring the .h files
+                    # Run gcov and output the results for each source file, ignoring the .h files
                     echo "Running gcov on $c_file..."
-                    gcov_output=$(gcov -abcg "$c_file" | sed "/\.h/,/^$/d")
+                    gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
+                    
+                    # Process gcov results for coverage summary
+                    gcov_output=$(gcov -abcg "$c_file")
                     
                     # Process the gcov output line by line
                     while IFS= read -r line; do
