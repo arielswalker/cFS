@@ -14,7 +14,7 @@ overall_no_conditions_count=0  # Counter for files with no condition data across
 module_count=0  # To track the number of modules processed
 
 # Used for testing, outputs what modules are found
-# To do: make sure all modules are captured 
+# All 99 test modules are found plus queue-test and core-cpu1
 
 # Collect all the module directories
 echo "List of found modules:"
@@ -22,9 +22,15 @@ for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
     
+    # Skip core-cpu1 and queue-test
+    if [[ "$module_name" == "core-cpu1" || "$module_name" == "queue-test" ]]; then
+        continue
+    fi
+    
     # Search for the module-name.dir folder inside build/native/default_cpu1 (with -testrunner)
     module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
-    
+
+    # Remove '-testrunner' from the module name
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
     
     # Check if the module directories are found
@@ -35,61 +41,16 @@ for dir in $subdirs; do
     fi
 done
 
-# Show coverage for each file in a module
-for dir in $subdirs; do
-    # Get just the module name (strip the parent directory structure)
-    module_name=$(basename "$dir")
-    
-    # Remove '-testrunner' from the module name for gcda search
-    module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
-    
-    # Output the current module name
-    echo "Processing $module_name_no_testrunner module..."
-    
-    # Search for the module-name.dir folder inside build/native/default_cpu1 (with -testrunner)
-    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
-
-    # Check if the module directory is found
-    if [ -n "$module_dirs" ]; then
-        # Iterate over each found directory
-        for module_dir in $module_dirs; do
-            echo "Found module directory: $module_dir"
-            
-            # Get the parent directory of the module directory
-            parent_dir=$(dirname "$module_dir")
-            
-            # Find all '.gcda' files in any nested folder under the parent directory of module_name_no_testrunner.dir
-            echo "Searching for .gcda files under parent directory: $parent_dir..."
-            gcda_files=$(find "$parent_dir" -type d -name "*${module_name_no_testrunner}*.dir" -exec find {} -type f -name "*.gcda" \;)
-
-            # If there are any .gcda files, run gcov on them
-            if [ -n "$gcda_files" ]; then
-                echo "Found .gcda files. Processing them..."
-                for gcda_file in $gcda_files; do
-                    # Convert the .gcda file to its corresponding .c file
-                    c_file=$(echo "$gcda_file" | sed 's/\.gcda$/.c/')
-                    
-                    # Output the corresponding .c file path
-                    echo "Processing corresponding .c file: $c_file"
-                    
-                    # Run gcov and output the results
-                    echo "Running gcov on $c_file..."
-                    gcov -abcg "$c_file" | sed "/\.h/,/^$/d"
-                done
-            else
-                echo "No .gcda files found for $original_module_name under parent directory $parent_dir."
-            fi
-        done
-    else
-        echo "Directory for module $original_module_name (e.g., ${module_name}.dir) not found inside build/native/default_cpu1."
-    fi
-done
-
 # Show total coverage summary for each module
 for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
-    echo "Processing $module_name module..."
+    echo "\nProcessing $module_name module..."
+
+    # Skip core-cpu1 and queue-test
+    if [[ "$module_name" == "core-cpu1" || "$module_name" == "queue-test" ]]; then
+        continue
+    fi
     
     # Remove '-testrunner' from the module name for gcda search
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
