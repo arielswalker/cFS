@@ -26,9 +26,9 @@ for dir in $subdirs; do
     module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
     
     # Check if the module directories are found
-    echp "List of found modules:"
+    echo "List of found modules:"
     if [ -n "$module_dirs" ]; then
-        echo "$module_dirs"
+        echo "$module_name"
     else
         echo "No directories found for $module_name inside build/native/default_cpu1."
     fi
