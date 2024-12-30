@@ -44,20 +44,7 @@ jobs:
     runs-on: ubuntu-20.04
     container: ghcr.io/arielswalker/mcdc:latest
 
-    steps:
-    # Add to dockerfile
-      - name: Set up dependencies 
-        run: |
-          apt-get update
-          apt-get install -y git cmake lcov python3
-          
-      - name: Debug gcc
-        run: |
-          gcc -v
-          gcov -v
-          which gcc
-          which gcov
-            
+    steps:        
       - name: Checkout Bundle Main
         uses: actions/checkout@v4
         with:
@@ -79,13 +66,6 @@ jobs:
         run: |
           sed -i '/if (NOT CMAKE_CROSSCOMPILING AND NOT OSAL_OMIT_DEPRECATED)/,/\}/s/set(UT_COVERAGE_COMPILE_FLAGS.*/set(UT_COVERAGE_COMPILE_FLAGS -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
           sed -i '/if (NOT CMAKE_CROSSCOMPILING AND NOT OSAL_OMIT_DEPRECATED)/,/\}/s/set(UT_COVERAGE_LINK_FLAGS.*/set(UT_COVERAGE_LINK_FLAGS -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
-
-      - name: Echo edited osal file
-        run: |
-          # Output the entire contents of osal/CMakeLists.txt to verify the changes
-          ls
-          pwd
-          cat osal/src/bsp/generic-linux/build_options.cmake
           
       - name: Add repo to build
         if: ${{ inputs.app-name != '' }}
@@ -123,11 +103,6 @@ jobs:
         if: success() || failure()
         run: bash .github/scripts/mcdc-analyze.sh
         
-# to do pull test modules 
-# call script to show mcdc coverage 
-
-# add gcov files and summary as archive 
-
       - name: Archive unit test results
         # Upload if success or failure which supports skipping, unlike always()
         if: success() || failure()
