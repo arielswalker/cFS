@@ -41,20 +41,22 @@ for dir in $subdirs; do
     fi
 done
 
-# Show total coverage summary for each module
+# Show coverage for each file in a module and summary coverage for each module
 for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
-
+    
     # Skip core-cpu1 and queue-test
     if [[ "$module_name" == "core-cpu1" || "$module_name" == "queue-test" ]]; then
         continue
     fi
     
-    # Remove '-testrunner' from the module name for gcda search
+    # Remove '-testrunner' from the module name
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
     
-    echo -e "\nProcessing $module_name_no_testrunner module..."
+    # Output the current module name
+    echo
+    echo "Processing $module_name_no_testrunner module..."
     
     # Initialize module-level counters
     total_functions=0
@@ -82,6 +84,9 @@ for dir in $subdirs; do
                 for gcda_file in $gcda_files; do
                     # Convert the .gcda file to its corresponding .c file
                     c_file=$(echo "$gcda_file" | sed 's/\.gcda$/.c/')
+                    
+                    # Output the corresponding .c file path
+                    echo "Processing corresponding .c file: $c_file"
                     
                     # Run gcov and output the results, ignoring the .h files
                     echo "Running gcov on $c_file..."
@@ -141,6 +146,7 @@ for dir in $subdirs; do
     echo "  Condition outcomes covered: ${average_condition_coverage}% of $total_functions"
     echo ""
 done
+
 
 # Calculate the overall total coverage percentage
 if [ "$overall_total_functions" -ne 0 ]; then
