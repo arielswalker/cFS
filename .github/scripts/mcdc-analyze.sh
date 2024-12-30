@@ -26,8 +26,8 @@ for dir in $subdirs; do
     module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
     
     # Check if the module directories are found
+    echp "List of found modules:"
     if [ -n "$module_dirs" ]; then
-        echo "Found the following module directories for $module_name:"
         echo "$module_dirs"
     else
         echo "No directories found for $module_name inside build/native/default_cpu1."
@@ -43,7 +43,7 @@ for dir in $subdirs; do
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
     
     # Output the current module name
-    echo "Processing $module_name module..."
+    echo "Processing $module_name_no_testrunner module..."
     
     # Search for the module-name.dir folder inside build/native/default_cpu1 (with -testrunner)
     module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
@@ -172,7 +172,7 @@ for dir in $subdirs; do
     module_count=$((module_count + 1))
     
     # Output the summary for this specific module
-    echo "Summary for $module_name module:"
+    echo "Summary for $module_name_no_testrunner module:"
     echo "  Total files processed: $file_count"
     echo "  Number of files with no condition data: $no_conditions_count"
     echo "  Condition outcomes covered: ${average_condition_coverage}% of $total_functions"
