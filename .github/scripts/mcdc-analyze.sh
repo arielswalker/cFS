@@ -55,11 +55,7 @@ for dir in $subdirs; do
     module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
     
     # Output the current module name
-    echo '\n'
-    echo "test"
     echo " "
-    echo "test 2"
-    echo "\n\n"
     echo "Processing $module_name_no_testrunner module..."
     
     # Initialize module-level counters
