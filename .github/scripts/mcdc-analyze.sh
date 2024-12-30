@@ -14,7 +14,7 @@ overall_no_conditions_count=0  # Counter for files with no condition data across
 module_count=0  # To track the number of modules processed
 
 # Used for testing, outputs what modules are found
-# All 99 test modules are found plus queue-test and core-cpu1
+# All 99 test modules are found plus core-cpu1
 
 # Collect all the module directories
 echo "List of found modules:"
@@ -22,8 +22,8 @@ for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
     
-    # Skip core-cpu1 and queue-test
-    if [[ "$module_name" == "core-cpu1" || "$module_name" == "queue-test" ]]; then
+    # Skip core-cpu1
+    if [[ "$module_name" == "core-cpu1" ]]; then
         continue
     fi
     
@@ -46,8 +46,8 @@ for dir in $subdirs; do
     # Get just the module name (strip the parent directory structure)
     module_name=$(basename "$dir")
     
-    # Skip core-cpu1 and queue-test
-    if [[ "$module_name" == "core-cpu1" || "$module_name" == "queue-test" ]]; then
+    # Skip core-cpu1
+    if [[ "$module_name" == "core-cpu1" ]]; then
         continue
     fi
     
