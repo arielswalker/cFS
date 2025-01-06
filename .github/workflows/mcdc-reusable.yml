@@ -56,7 +56,7 @@ jobs:
         with:
           submodules: true
           repository: arielswalker/cFS
-          fetch-depth: 0
+          ref: test-mcdc        
 
       - name: Checkout Repo
         if: ${{ inputs.app-name != '' }}
@@ -114,9 +114,7 @@ jobs:
                 
       - name: Run mcdc analysis
         if: success() || failure()
-        run: |
-          chmod +x .github/scripts/mcdc-analyze.sh
-          bash .github/scripts/mcdc-analyze.sh
+        run: bash .github/scripts/mcdc-analyze.sh
         
       - name: Archive unit test results
         # Upload if success or failure which supports skipping, unlike always()
