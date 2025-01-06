@@ -3,8 +3,12 @@
 # Redirect all echo outputs to mcdc_results.txt and capture gcov output
 exec > >(tee -a mcdc_results.txt) 2>&1
 
-# Automatically extract subdirectories/modules under the base directory
-subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
+# If a subdirectory is provided, use it, otherwise find subdirectories automatically. Used for cFS bundle and apps
+if [ -n "$SUBDIR" ]; then
+    subdirs="$SUBDIR"
+else
+    subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
+fi
 
 # Initialize overall counters
 overall_total_functions=0
