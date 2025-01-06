@@ -77,7 +77,6 @@ for module in $modules; do
     file_count=0
     no_conditions_count=0
 
-# NEW CODE - NEED TO TEST 
     module_dirs=""
         
     if [ -n "$MODULES" ]; then
@@ -90,7 +89,6 @@ for module in $modules; do
         module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
         echo "No subdirectory provided: Searching for .gcda files in default module directories..."
     fi
-# END NEW CODE 
 
     if [ -n "$module_dirs" ]; then
         for module_dir in $module_dirs; do
@@ -135,7 +133,7 @@ for module in $modules; do
             fi
         done
     else
-        echo "Directory for module $module_name (e.g., ${module_name}.dir) not found inside build/native/default_cpu1."
+        echo "Directory for module $module_name \(e.g., ${module_name}.dir\) not found inside build/native/default_cpu1."
     fi
     
     if [ "$total_functions" -ne 0 ]; then
