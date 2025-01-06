@@ -18,8 +18,13 @@ echo "List of found modules:"
 for dir in $subdirs; do
     module_name=$(basename "$dir")
     
-    # Skip core-cpu1
-    if [[ "$module_name" == "core-cpu1" ]]; then
+    # Skip specific files and directories
+    if [[ "$module_name" == "core-cpu1" || \
+          "$module_name" == "Makefile" || \
+          "$module_name" == "CTestTestfile" || \
+          "$module_name" == "cmake_install" || \
+          "$module_name" == "gmon" || \
+          "$module_name" == *"stubs"* ]]; then
         continue
     fi
     
@@ -37,8 +42,13 @@ done
 for dir in $subdirs; do
     module_name=$(basename "$dir")
     
-    # Skip core-cpu1
-    if [[ "$module_name" == "core-cpu1" ]]; then
+    # Skip specific files and directories
+    if [[ "$module_name" == "core-cpu1" || \
+          "$module_name" == "Makefile" || \
+          "$module_name" == "CTestTestfile" || \
+          "$module_name" == "cmake_install" || \
+          "$module_name" == "gmon" || \
+          "$module_name" == *"stubs"* ]]; then
         continue
     fi
     
