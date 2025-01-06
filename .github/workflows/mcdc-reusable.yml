@@ -12,9 +12,9 @@ on:
 
 env:
   SIMULATION: native
-  OMIT_DEPRECATED: true
   ENABLE_UNIT_TESTS: true
-  CTEST_OUTPUT_ON_FAILURE: true
+  OMIT_DEPRECATED: true
+  BUILDTYPE: debug
   
 # Force bash to apply pipefail option so pipeline failures aren't masked
 defaults:
@@ -79,7 +79,7 @@ jobs:
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
         
       - name: Make prep
-        run: make SIMULATION=native ENABLE_UNIT_TESTS=true OMIT_DEPRECATED=true prep
+        run: make prep
 
       - name: Make install 
         if: ${{ inputs.app-name == '' }}
