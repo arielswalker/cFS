@@ -110,6 +110,11 @@ jobs:
         run: |
           pwd
           ls
+          pwd
+          ls -la
+          cd .github
+          pwd
+          ls
                 
       - name: Run mcdc analysis
         if: success() || failure()
