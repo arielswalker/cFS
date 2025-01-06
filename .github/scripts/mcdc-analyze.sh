@@ -54,7 +54,7 @@ done
 
 # Show coverage for each file in a module and summary coverage for each module
 for module in $modules; do
-    module_name=$(basename "$dir")
+    module_name=$(basename "$module")
     
     # Skip specific files and directories
     if [[ "$module_name" == "core-cpu1" || \
