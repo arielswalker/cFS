@@ -6,8 +6,10 @@ exec > >(tee -a mcdc_results.txt) 2>&1
 # If a subdirectory is provided, use it, otherwise find subdirectories automatically. Used for cFS bundle and apps
 if [ -n "$SUBDIR" ]; then
     subdirs="$SUBDIR"
+    echo "Test modules provided: $subdirs. Searching in $subdirs..."
 else
     subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
+    echo "No test modules provided. Automatically finding modules under $BASE_DIR."
 fi
 
 # Initialize overall counters
@@ -66,9 +68,22 @@ for dir in $subdirs; do
     total_covered_functions=0
     file_count=0
     no_conditions_count=0
-    
-    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
-    
+
+# NEW CODE - NEED TO TEST 
+    module_dirs=""
+        
+    if [ -n "$SUBDIR" ]; then
+        # If SUBDIR (test module) is provided, use the path to search for .gcda files. Used for cFE where .gcda files are 
+        # generated under base_dir/module-name/ut-coverage instead of base_dir/module_name.dir
+        module_dirs="$BASE_DIR/$module_name/ut-coverage"
+        echo "Subdirectory specified: Searching for .gcda files in $module_dirs..."
+    else
+        # Otherwise, look for the default module directories
+        module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
+        echo "No subdirectory provided: Searching for .gcda files in default module directories..."
+    fi
+# END NEW CODE 
+
     if [ -n "$module_dirs" ]; then
         for module_dir in $module_dirs; do
             echo "Found module directory: $module_dir"
