@@ -45,6 +45,12 @@ jobs:
     container: ghcr.io/arielswalker/mcdc:latest
 
     steps:        
+      - name: Set up environment variables
+        # Apps typically use lowercase targets and uppercase names, this logic is fragile but works
+        run: |
+          echo "APP_UPPER=$(echo ${{ inputs.app-name }} | sed 's/[a-z]/\U&/g')" >> $GITHUB_ENV
+          echo "APP_LOWER=$(echo ${{ inputs.app-name }} | sed 's/[A-Z]/\L&/g')" >> $GITHUB_ENV
+          
       - name: Checkout Bundle Main
         uses: actions/checkout@v4
         with:
@@ -55,7 +61,7 @@ jobs:
         if: ${{ inputs.app-name != '' }}
         uses: actions/checkout@v4
         with:
-          path: apps/${{ inputs.app-name }}
+          path: apps/${{  env.APP_LOWER  }}
 
       - name: Copy Files
         run: |
@@ -72,22 +78,22 @@ jobs:
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
         
       - name: Make prep
-        run: make prep VERBOSE=1
+        run: make SIMULATION=native ENABLE_UNIT_TESTS=true OMIT_DEPRECATED=true prep
 
       - name: Make install 
         if: ${{ inputs.app-name == '' }}
-        run: make install VERBOSE=1
+        run: make install
 
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
         run: |
           echo "BASE_DIR=build/exe/cpu1" >> $GITHUB_ENV
           (make test VERBOSE=1) | tee test_results.txt
-        
+          
       - name: Build app build dependencies
         if: ${{ inputs.app-name != '' }}
         run: make -C build/tools/elf2cfetbl
-
+        
       - name: Build app target
         if: ${{ inputs.app-name != '' }}
         run: |
@@ -98,7 +104,12 @@ jobs:
         run: |          
           echo "BASE_DIR=build/native/default_cpu1/apps/$APP_LOWER" >> $GITHUB_ENV
           (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt
-
+          
+      - name: Debug
+        run: |
+          pwd
+          ls
+                
       - name: Run mcdc analysis
         if: success() || failure()
         run: bash .github/scripts/mcdc-analyze.sh
