@@ -103,15 +103,9 @@ jobs:
       - name: Run app test
         if: ${{ inputs.app-name != '' }}
         run: |          
-          echo "BASE_DIR=build/native/default_cpu1/apps/$APP_LOWER" >> $GITHUB_ENV
+          echo "BASE_DIR=build/native/default_cpu1/apps/$APP_LOWER/unit-test" >> $GITHUB_ENV
           (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt
-          
-      - name: Debug
-        run: |
-          cd .github/scripts
-          pwd
-          ls
-                
+   
       - name: Run mcdc analysis
         if: success() || failure()
         run: bash .github/scripts/mcdc-analyze.sh
