@@ -3,13 +3,45 @@
 # Redirect all echo outputs to mcdc_results.txt and capture gcov output
 exec > >(tee -a mcdc_results.txt) 2>&1
 
-# If a subdirectory is provided, use it, otherwise find subdirectories automatically. Used for cFS bundle and apps
-if [ -n "$SUBDIR" ]; then
-    subdirs="$SUBDIR"
-    echo "Test modules provided: $subdirs. Searching in $subdirs..."
+# If test modules are provided, use it, otherwise find them automatically. Test modules must be provided for cFE
+if [ -n "$MODULES" ]; then
+    modules="$MODULES"
+    echo "Test modules provided: $modules
 else
-    subdirs=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
+    modules=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
     echo "No test modules provided. Automatically finding modules under $BASE_DIR."
+    
+    echo "List of found modules:"
+    # Iterate over each module in the modules list
+    for module in $modules; do
+        # Get the base name of the module (e.g., remove any path components if $module contains a full path)
+        module_name=$(basename "$module")
+        
+        # If the module name matches any of the conditions, skip it and continue with the next iteration
+        if [[ "$module_name" == "core-cpu1" || \
+              "$module_name" == "Makefile" || \
+              "$module_name" == "CTestTestfile" || \
+              "$module_name" == "cmake_install" || \
+              "$module_name" == "gmon" || \
+              "$module_name" == *"stubs"* ]]; then
+            continue
+        fi
+        
+        # Search for directories named "$module_name.dir" in the "build/native/default_cpu1" directory
+        # This assumes that the directories corresponding to each module follow the naming convention <module_name>.dir
+        module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
+        
+        # Remove the "-testrunner" suffix from the module name, if present
+        module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
+        
+        # If any matching directories are found for the module, print the module name without the "testrunner" suffix
+        if [ -n "$module_dirs" ]; then
+            echo "$module_name_no_testrunner"
+        else
+            # If no matching directories are found, print a message indicating so
+            echo "No directories found for $module_name inside build/native/default_cpu1."
+        fi
+    done
 fi
 
 # Initialize overall counters
@@ -19,33 +51,9 @@ overall_file_count=0
 overall_no_conditions_count=0
 module_count=0
 
-# Collect all the module directories
-echo "List of found modules:"
-for dir in $subdirs; do
-    module_name=$(basename "$dir")
-    
-    # Skip specific files and directories
-    if [[ "$module_name" == "core-cpu1" || \
-          "$module_name" == "Makefile" || \
-          "$module_name" == "CTestTestfile" || \
-          "$module_name" == "cmake_install" || \
-          "$module_name" == "gmon" || \
-          "$module_name" == *"stubs"* ]]; then
-        continue
-    fi
-    
-    module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
-    module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
-
-    if [ -n "$module_dirs" ]; then
-        echo "$module_name_no_testrunner"
-    else
-        echo "No directories found for $module_name inside build/native/default_cpu1."
-    fi
-done
 
 # Show coverage for each file in a module and summary coverage for each module
-for dir in $subdirs; do
+for module in $modules; do
     module_name=$(basename "$dir")
     
     # Skip specific files and directories
@@ -72,8 +80,8 @@ for dir in $subdirs; do
 # NEW CODE - NEED TO TEST 
     module_dirs=""
         
-    if [ -n "$SUBDIR" ]; then
-        # If SUBDIR (test module) is provided, use the path to search for .gcda files. Used for cFE where .gcda files are 
+    if [ -n "$MODULES" ]; then
+        # If MODULES) is provided, use the path to search for .gcda files. Used for cFE where .gcda files are 
         # generated under base_dir/module-name/ut-coverage instead of base_dir/module_name.dir
         module_dirs="$BASE_DIR/$module_name/ut-coverage"
         echo "Subdirectory specified: Searching for .gcda files in $module_dirs..."
@@ -147,7 +155,7 @@ for dir in $subdirs; do
     echo "  Total files processed: $file_count"
     echo "  Number of files with no condition data: $no_conditions_count"
     echo "  Condition outcomes covered: ${average_condition_coverage}% of $total_functions"
-    echo ""
+    echo " "
 done
 
 if [ "$overall_total_functions" -ne 0 ]; then
@@ -156,6 +164,7 @@ else
     overall_condition_coverage=0
 fi
 
+echo " "
 echo "Overall summary:"
 echo "  Total files processed: $overall_file_count"
 echo "  Number of files with no condition data: $overall_no_conditions_count"
