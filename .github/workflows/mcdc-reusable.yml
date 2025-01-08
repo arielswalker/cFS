@@ -88,8 +88,8 @@ jobs:
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
         run: |
-          echo "BASE_DIR=build/exe/cpu1" >> $GITHUB_ENV
-          (make test VERBOSE=1) | tee test_results.txt
+          (make test VERBOSE=1 | tee test_results.txt)
+          echo "MODULES=$(grep -oP 'Test #\d+: \K[\w\-\_]+' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
           
       - name: Build app build dependencies
         if: ${{ inputs.app-name != '' }}
