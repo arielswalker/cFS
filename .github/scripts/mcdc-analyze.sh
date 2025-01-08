@@ -3,47 +3,17 @@
 # Redirect all echo outputs to mcdc_results.txt and capture gcov output
 exec > >(tee -a mcdc_results.txt) 2>&1
 
-# If test modules are provided, use it, otherwise find them automatically. Test modules must be provided for cFE
-# TESTING: PULL MODULES FROM MAKE TEST AND PASS TO SCRIPT. FOR ELSE SHOW NO TEST MODULES PROVIDED
+# Pass the test modules after running unit tests
+# Ex. echo "MODULES=$(grep -oP 'Test #\d+: \K[\w\-\_]+' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
 if [ -n "$MODULES" ]; then
     modules="$MODULES"
-    echo "Test modules provided: $modules"
-else
-    # Grab file names in given base_dir as test modules
-    modules=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
-    echo "No test modules provided. Automatically finding modules under $BASE_DIR."
-
-    echo "List of found modules:"
-    # Iterate over each module in the modules list
+    echo "Test modules provided: "
     for module in $modules; do
-        # Get the base name of the module (e.g., remove any path components if $module contains a full path)
-        module_name=$(basename "$module")
-        
-        # If the module name matches any of the conditions, skip it and continue with the next iteration
-        if [[ "$module_name" == "core-cpu1" || \
-              "$module_name" == "Makefile" || \
-              "$module_name" == "CTestTestfile" || \
-              "$module_name" == "cmake_install" || \
-              "$module_name" == "gmon" || \
-              "$module_name" == *"stubs"* ]]; then
-            continue
-        fi
-        
-        # Search for directories named "$module_name.dir" in the "build/native/default_cpu1" directory
-        # This assumes that the directories corresponding to each module follow the naming convention <module_name>.dir
-        module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
-        
-        # Remove the "-testrunner" suffix from the module name, if present
-        module_name_no_testrunner=$(echo "$module_name" | sed 's/-testrunner$//')
-        
-        # If any matching directories are found for the module, print the module name without the "testrunner" suffix
-        if [ -n "$module_dirs" ]; then
-            echo "$module_name_no_testrunner"
-        else
-            # If no matching directories are found, print a message indicating so
-            echo "No directories found for $module_name inside build/native/default_cpu1."
-        fi
+        echo "$module"
     done
+else
+    echo "No test modules provided. 
+    exit 1 
 fi
 
 # Initialize overall counters
