@@ -88,8 +88,7 @@ jobs:
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
         run: |
-          (make test VERBOSE=1) | tee test_results.txt || true
-          echo "MODULES=$(grep -oP 'Test #\d+: \K[\w\-\_]+' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
+          (make test VERBOSE=1) | tee test_results.txt
           
       - name: Build app build dependencies
         if: ${{ inputs.app-name != '' }}
@@ -104,9 +103,14 @@ jobs:
         if: ${{ inputs.app-name != '' }}
         run: |          
           echo "BASE_DIR=build/native/default_cpu1/apps/$APP_LOWER/unit-test" >> $GITHUB_ENV
-          (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt || true
+          (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose) | tee test_results.txt 
+          
+      - name: Grab test modules
+        if: success() || failure()
+        run: |
           echo "MODULES=$(grep -oP 'Test #\d+: \K[\w\-\_]+' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
-   
+
+           
       - name: Run mcdc analysis
         if: success() || failure()
         run: bash .github/scripts/mcdc-analyze.sh
@@ -125,7 +129,7 @@ jobs:
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
-          name: mcdc results
+          name: MCDC results
           path: |
             **/*.gcov
             mcdc_results.txt
