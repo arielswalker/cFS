@@ -73,7 +73,7 @@ for module in $modules; do
     else
         # Otherwise, look for the default module directories
         module_dirs=$(find "build/native/default_cpu1" -type d -name "*${module_name}*.dir")
-        echo "No base directory provided: Searching for .gcda files in default module directories, build/native/default_cpu1..."
+        echo "No base directory provided: Searching for .gcda files in default base directory build/native/default_cpu1..."
     fi
 
     if [ -n "$module_dirs" ]; then
@@ -94,8 +94,8 @@ for module in $modules; do
                     # Capture gcov output and remove header files
                     gcov_output=$(gcov -abcg "$c_file" | sed "/\.h/,/^$/d")
                     
-                    # Output the gcov result to the log
-                    echo "$gcov_output" >> mcdc_results.txt
+                    # Output the gcov result of each file and save to mcdc_results.txt
+                    echo "$gcov_output" | tee -a mcdc_results.txt
 
                     # Process gcov results for coverage summary
                     while IFS= read -r line; do
