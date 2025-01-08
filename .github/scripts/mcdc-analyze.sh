@@ -50,28 +50,13 @@ for module in $modules; do
     no_conditions_count=0
 
     module_dirs=""
-# =========================================================== 
-# Comment out for cFS bundle, will need new code for cFE to search in 
-# base_dir/module-name/ut-coverage instead of base_dir/module_name.dir
-#    if [ -n "$MODULES" ]; then
-#        # If MODULES) is provided, use the path to search for .gcda files. Used for cFE where .gcda files are 
-#        # generated under base_dir/module-name/ut-coverage instead of base_dir/module_name.dir
-#        module_dirs="$BASE_DIR/$module_name/ut-coverage"
-#        echo "Subdirectory specified: Searching for .gcda files in $module_dirs..."
-#    else
-#        # Otherwise, look for the default module directories
-#        module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
-#        echo "No subdirectory provided: Searching for .gcda files in default module directories..."
-#    fi
-# ===========================================================
 
     if [ -n "$BASE_DIR" ]; then
-        # If BASE_DIR is provided, use the path to search for .gcda files. Used for cFE where .gcda files are 
-        # generated under base_dir/module-name/ut-coverage instead of base_dir/module_name.dir
-        module_dirs="$BASE_DIR/$module_name/ut-coverage"
+        # If BASE_DIR is provided, search within the BASE_DIR for the module directories.
+        module_dirs=$(find "$BASE_DIR" -type d -name "*${module_name}*")
         echo "Base directory specified: Searching for .gcda files in $module_dirs..."
     else
-        # Otherwise, look for the default module directories
+        # Otherwise, look for the default module directories.
         module_dirs=$(find "build/native/default_cpu1" -type d -name "*${module_name}*.dir")
         echo "No base directory provided: Searching for .gcda files in default base directory build/native/default_cpu1..."
     fi
