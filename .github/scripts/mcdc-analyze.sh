@@ -8,7 +8,8 @@ if [ -n "$MODULES" ]; then
     modules="$MODULES"
     echo "Test modules provided: $modules"
 else
-    modules=$(find "$BASE_DIR" -maxdepth 1 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
+    # Search for modules in given base_dir and in its immediate subdirectories
+    modules=$(find "$BASE_DIR" -maxdepth 2 -type f | sed -E "s|^$BASE_DIR/([^/]+)\..*|\1|")
     echo "No test modules provided. Automatically finding modules under $BASE_DIR."
 
     echo "List of found modules:"
