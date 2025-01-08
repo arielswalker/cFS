@@ -12,7 +12,7 @@ if [ -n "$MODULES" ]; then
         echo "$module"
     done
 else
-    echo "No test modules provided. 
+    echo "No test modules provided."
     exit 1 
 fi
 
