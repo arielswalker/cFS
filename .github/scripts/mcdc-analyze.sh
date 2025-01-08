@@ -4,6 +4,7 @@
 exec > >(tee -a mcdc_results.txt) 2>&1
 
 # If test modules are provided, use it, otherwise find them automatically. Test modules must be provided for cFE
+# TESTING: PULL MODULES FROM MAKE TEST AND PASS TO SCRIPT. FOR ELSE SHOW NO TEST MODULES PROVIDED
 if [ -n "$MODULES" ]; then
     modules="$MODULES"
     echo "Test modules provided: $modules"
