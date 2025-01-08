@@ -72,7 +72,7 @@ for module in $modules; do
         echo "Base directory specified: Searching for .gcda files in $module_dirs..."
     else
         # Otherwise, look for the default module directories
-        module_dirs=$(find "build/native/default_cpu1" -type d -name "${module_name}.dir")
+        module_dirs=$(find "build/native/default_cpu1" -type d -name "*${module_name}*.dir")
         echo "No base directory provided: Searching for .gcda files in default module directories, build/native/default_cpu1..."
     fi
 
