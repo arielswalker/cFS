@@ -55,7 +55,7 @@ for module in $modules; do
         # If BASE_DIR is provided, search within the BASE_DIR for the module directories.
         # FIX, module dirs doesn't always show
         module_dirs=$(find "$BASE_DIR" -type d -name "*${module_name}*")
-        echo "Base directory specified: BASE_DIR"
+        echo "Base directory specified: $BASE_DIR"
         echo "Searching for .gcda files..."
     else
         # Otherwise, look for the default module directories.
