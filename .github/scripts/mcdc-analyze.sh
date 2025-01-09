@@ -53,8 +53,10 @@ for module in $modules; do
 
     if [ -n "$BASE_DIR" ]; then
         # If BASE_DIR is provided, search within the BASE_DIR for the module directories.
+        # FIX, module dirs doesn't always show
         module_dirs=$(find "$BASE_DIR" -type d -name "*${module_name}*")
-        echo "Base directory specified: Searching for .gcda files in $module_dirs..."
+        echo "Base directory specified: BASE_DIR"
+        echo "Searching for .gcda files..."
     else
         # Otherwise, look for the default module directories.
         module_dirs=$(find "build/native/default_cpu1" -type d -name "*${module_name}*.dir")
@@ -104,7 +106,7 @@ for module in $modules; do
             fi
         done
     else
-        echo "Directory for module $module_name \(e.g., ${module_name}.dir\) not found inside build/native/default_cpu1."
+        echo "Directory for module $module_name \(e.g., ${module_name}.dir\) not found."
     fi
     
     if [ "$total_functions" -ne 0 ]; then
