@@ -56,11 +56,11 @@ for module in $modules; do
         # FIX, module dirs doesn't always show
         module_dirs=$(find "$BASE_DIR" -type d -name "*${module_name}*")
         echo "Base directory specified: $BASE_DIR"
-        echo "Searching for .gcda files..."
+        echo "Searching for .gcda directory..."
     else
         # Otherwise, look for the default module directories.
         module_dirs=$(find "build/native/default_cpu1" -type d -name "*${module_name}*.dir")
-        echo "No base directory provided: Searching for .gcda files in default base directory build/native/default_cpu1..."
+        echo "No base directory provided: Searching for .gcda directory..."
     fi
 
     if [ -n "$module_dirs" ]; then
