@@ -71,7 +71,7 @@ jobs:
        
       - name: Modify osal to include coverage flags
         run: |
-          sed -i 's/target_compile_options(ut_coverage_compile INTERFACE -pg -ftest-coverage -fprofile-arcs)/target_compile_options(ut_coverage_compile INTERFACE -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' source/src/bsp/generic-linux/CMakeLists.txt
+          sed -i 's/target_compile_options(ut_coverage_compile INTERFACE -pg -ftest-coverage -fprofile-arcs)/target_compile_options(ut_coverage_compile INTERFACE -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/CMakeLists.txt
        
       - name: Add repo to build
         if: ${{ inputs.app-name != '' }}
