@@ -71,9 +71,8 @@ jobs:
        
       - name: Modify osal to include coverage flags
         run: |
-          sed -i '/if (NOT CMAKE_CROSSCOMPILING AND NOT OSAL_OMIT_DEPRECATED)/,/\}/s/set(UT_COVERAGE_COMPILE_FLAGS.*/set(UT_COVERAGE_COMPILE_FLAGS -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
-          sed -i '/if (NOT CMAKE_CROSSCOMPILING AND NOT OSAL_OMIT_DEPRECATED)/,/\}/s/set(UT_COVERAGE_LINK_FLAGS.*/set(UT_COVERAGE_LINK_FLAGS -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
-          
+          sed -i 's/target_compile_options(ut_coverage_compile INTERFACE -pg -ftest-coverage -fprofile-arcs)/target_compile_options(ut_coverage_compile INTERFACE -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' source/src/bsp/generic-linux/CMakeLists.txt
+       
       - name: Add repo to build
         if: ${{ inputs.app-name != '' }}
         run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
@@ -83,7 +82,7 @@ jobs:
 
       - name: Make install 
         if: ${{ inputs.app-name == '' }}
-        run: make install
+        run: make install VERBOSE=1
 
       - name: Make test 
         if: ${{ inputs.app-name == '' }}
@@ -110,7 +109,6 @@ jobs:
         run: |
           echo "MODULES=$(grep -oP 'Test #\d+: \K[\w\-\_]+' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
 
-           
       - name: Run mcdc analysis
         if: success() || failure()
         run: bash .github/scripts/mcdc-analyze.sh
