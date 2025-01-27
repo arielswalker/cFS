@@ -1,0 +1,146 @@
+name: MCDC Reusable Workflow
+
+on:
+  workflow_call:
+    inputs:
+      # Optional inputs
+      app-name:
+        description: Application name, if different from repo name
+        type: string
+        required: false
+        default: ''
+
+env:
+  SIMULATION: native
+  ENABLE_UNIT_TESTS: true
+  OMIT_DEPRECATED: true
+  BUILDTYPE: debug
+  TESTS_RAN: false
+  
+# Force bash to apply pipefail option so pipeline failures aren't masked
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # Checks for duplicate actions. Skips push actions if there is a matching or
+  # duplicate pull-request action.
+  checks-for-duplicates:
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: 'same_content'
+          skip_after_successful_duplicate: 'true'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
+  mcdc:
+    needs: checks-for-duplicates
+    if: ${{ needs.checks-for-duplicates.outputs.should_skip != 'true' || contains(github.ref, 'main') }}
+    name: Build and Run MCDC
+    runs-on: ubuntu-latest
+    container: ghcr.io/core-flight-system/mcdc:latest
+
+    steps:        
+      - name: Set up environment variables
+        # Apps typically use lowercase targets and uppercase names, this logic is fragile but works
+        run: |
+          echo "APP_UPPER=$(echo ${{ inputs.app-name }} | sed 's/[a-z]/\U&/g')" >> $GITHUB_ENV
+          echo "APP_LOWER=$(echo ${{ inputs.app-name }} | sed 's/[A-Z]/\L&/g')" >> $GITHUB_ENV
+
+      - name: Checkout Bundle Main
+        uses: actions/checkout@v4
+        with:
+          repository: arielswalker/cFS
+          submodules: true
+          ref: test-mcdc
+
+      - name: Checkout Repo
+        if: ${{ inputs.app-name != '' }}
+        uses: actions/checkout@v4
+        with:
+          path: apps/${{  env.APP_LOWER  }}
+
+      - name: Checkout MCDC Script
+        uses: actions/checkout@v4
+        with:
+          repository: cFS/workflows
+          path: workflows
+
+      - name: Copy Files
+        run: |
+          cp ./cfe/cmake/Makefile.sample Makefile
+          cp -r ./cfe/cmake/sample_defs sample_defs
+       
+      - name: Modify osal to include conditional coverage flags
+        run: |
+          sed -i 's/target_compile_options.*)/target_compile_options(ut_coverage_compile INTERFACE -pg -O0 -fprofile-arcs -ftest-coverage -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/CMakeLists.txt       
+          sed -i 's/set(UT_COVERAGE_COMPILE_FLAGS.*)/set(UT_COVERAGE_COMPILE_FLAGS -pg --coverage -O0 -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
+          sed -i 's/set(UT_COVERAGE_LINK_FLAGS.*)/set(UT_COVERAGE_LINK_FLAGS -pg --coverage -O0 -fcondition-coverage -fprofile-abs-path)/' osal/src/bsp/generic-linux/build_options.cmake
+
+      - name: Add repo to build
+        if: ${{ inputs.app-name != '' }}
+        run: echo 'set(MISSION_GLOBAL_APPLIST ${{ inputs.app-name }})' >> sample_defs/targets.cmake
+        
+      - name: Make prep
+        run: make prep
+
+      - name: Make install 
+        if: ${{ inputs.app-name == '' }}
+        run: make install
+
+      - name: Make test 
+        if: ${{ inputs.app-name == '' }}
+        run: |
+          (make test VERBOSE=1 || true) | tee test_results.txt
+          echo "TESTS_RAN=true" >> $GITHUB_ENV
+          
+      - name: Build app build dependencies
+        if: ${{ inputs.app-name != '' }}
+        run: make -C build/tools/elf2cfetbl
+        
+      - name: Build app target
+        if: ${{ inputs.app-name != '' }}
+        run: |
+          make -C build/native/default_cpu1/apps/$APP_LOWER
+          
+      - name: Run app test
+        if: ${{ inputs.app-name != '' }}
+        run: |          
+          echo "BASE_DIR=build/native/default_cpu1/apps/$APP_LOWER/unit-test" >> $GITHUB_ENV
+          (cd build/native/default_cpu1/apps/$APP_LOWER; ctest --verbose || true) | tee test_results.txt 
+          echo "TESTS_RAN=true" >> $GITHUB_ENV
+          
+      - name: Grab test modules
+        # Grab test modules if tests ran, even if step failed
+        if: ${{ env.TESTS_RAN == 'true' }}
+        run: |
+          echo "MODULES=$(grep -oP 'Test\s+#\d+: \K[\w\-\_]+(?= )' test_results.txt | tr '\n' ' ' | sed 's/ $//')" >> $GITHUB_ENV
+
+      - name: Run MCDC analysis
+        # Run MCDC analysis if tests ran, even if step failed
+        if: ${{ env.TESTS_RAN == 'true' }}
+        run: bash workflows/.github/scripts/mcdc-analyze.sh
+        
+      - name: Archive unit test results
+        # Archive unit test results if tests ran, even if step failed
+        if: ${{ env.TESTS_RAN == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Unit test results
+          path: |
+            test_results.txt
+      
+      - name: Archive MCDC results
+        # Archive MCDC results if tests ran, even if step failed
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MCDC results
+          path: |
+            **/*.gcov
+            mcdc_results.txt
