@@ -45,8 +45,11 @@ jobs:
     # Set the type of machine to run on
     env:
       BUILDTYPE: ${{ matrix.buildtype }}
+      ENABLE_UNIT_TESTS: true
       # Set home to where rtems is located
       HOME: /root
+      # Disable mcopy check otherwise disk image build fails
+      MTOOLS_SKIP_CHECK: 1
 
     steps:
       # Check out the cfs bundle
@@ -79,15 +82,6 @@ jobs:
       fail-fast: false
       matrix:
         buildtype: [debug, release]
-
-    # Set the type of machine to run on
-    env:
-      BUILDTYPE: ${{ matrix.buildtype }}
-      ENABLE_UNIT_TESTS: true
-      # Set home to where rtems is located
-      HOME: /root
-      # Disable mcopy check otherwise disk image build fails
-      MTOOLS_SKIP_CHECK: 1
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
