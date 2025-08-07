@@ -52,7 +52,7 @@ jobs:
         id: cache-src-bld
         uses: actions/cache@v4
         with:
-          path: /__w/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
+          path: ./
           key: rtems5-build-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.buildtype }}
 
       - name: Checkout code
@@ -69,7 +69,7 @@ jobs:
         run: make SIMULATION=i686-rtems5 prep
 
       - name: Make
-        run: make
+        run: make install
 
   test-cfs:
     name: Test
@@ -90,7 +90,7 @@ jobs:
         id: cache-src-bld
         uses: actions/cache@v4
         with:
-          path: /__w/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
+          path: ./
           key: rtems5-build-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.buildtype }}
 
       - name: Test
