@@ -69,7 +69,7 @@ jobs:
         run: make SIMULATION=i686-rtems5 prep
 
       - name: Make
-        run: make install
+        run: make
 
   test-cfs:
     name: Test
