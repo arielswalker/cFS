@@ -94,7 +94,10 @@ jobs:
           key: rtems5-build-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.buildtype }}
 
       - name: Test
-        run: make O=build SKIP_NET_TESTS=true RTEMS_VERSION=i686-rtems5 -f .github/scripts/rtems-test.mk all_tests -k
+        run: |
+          make O=build SKIP_NET_TESTS=true RTEMS_VERSION=i686-rtems5 -f .github/scripts/rtems-test.mk all_tests -k
+          echo "=== RTEMS Info from Boot Log ==="
+          grep -A 10 "RTEMS Info" ./build/exe/cpu1/*.log || echo "RTEMS Info section not found"
 
       - name: Output Failed Tests
         run: |
