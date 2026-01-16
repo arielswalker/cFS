@@ -14,6 +14,17 @@ on:
         type: string
         required: false
         default: ''
+      # Currently CFS apps have at most one dependency, so this only handles one for now
+      dependency:
+        description: Additional module/library that this app depends on
+        type: string
+        required: false
+        default: ''
+      app-entrypoint-suffix:
+        description: Symbol suffix to use as app entry point
+        type: string
+        required: false
+        default: 'AppMain'
 
 # Force bash to apply pipefail option so pipeline failures aren't masked
 defaults:
@@ -36,18 +47,19 @@ jobs:
           skip_after_successful_duplicate: 'true'
           do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
 
-  build-and-run:
+  build-app:
     needs: checks-for-duplicates
     if: ${{ needs.checks-for-duplicates.outputs.should_skip != 'true' || contains(github.ref, 'main') }}
-    name: Build and run app, confirm startup message
+    name: Build CFE with app
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Set up environment variables
-        # Apps typically use lowercase targets and uppercase names, this logic is fragile but works
-        run: |
-          echo "APP_UPPER=$(echo ${{ inputs.app-name }} | sed 's/[a-z]/\U&/g')" >> $GITHUB_ENV
-          echo "APP_LOWER=$(echo ${{ inputs.app-name }} | sed 's/[A-Z]/\L&/g')" >> $GITHUB_ENV
+      # Note this also sets the APP_UPPER and APP_LOWER environment variables
+      - name: Set up app source
+        uses: arielswalker/cFS/actions/setup-app@draco-integration
+        with:
+          app-name: ${{ inputs.app-name }}
+          dependency: ${{ inputs.dependency }}
 
       - name: Set up start string for verification
         run: |
@@ -57,42 +69,135 @@ jobs:
             echo "START_STRING=${{ inputs.startup-string }}" >> $GITHUB_ENV
           fi
 
-      - name: Checkout Bundle Main
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          repository: nasa/cFS
-
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-        with:
-          path: apps/${{  env.APP_LOWER  }}
-
-      - name: Copy Files
-        run: |
-          cp ./cfe/cmake/Makefile.sample Makefile
-          cp -r ./cfe/cmake/sample_defs sample_defs
-
-      - name: Add To Build
-        run: |
-          sed -i "/list(APPEND MISSION_GLOBAL_APPLIST/a list(APPEND MISSION_GLOBAL_APPLIST $APP_LOWER)" sample_defs/targets.cmake
-
-      - name: Add To Startup
-        run: |
-          sed -i "1i CFE_APP, $APP_LOWER, ${APP_UPPER}_AppMain, $APP_UPPER, 80, 16384, 0x0, 0;" sample_defs/cpu1_cfe_es_startup.scr
-          cat sample_defs/cpu1_cfe_es_startup.scr
-
       - name: Make install
-        run: make SIMULATION=native BUILDTYPE=release OMIT_DEPRECATED=true install
+        run: make -C build mission-install
 
-      - name: Run cFS
-        working-directory: ./build/exe/cpu1
+      - name: Generate Startup Link
+        run: ln -s core-cpu1 ./build/exe/cpu1/container-start
+
+      - name: Replace startup script
         run: |
-          ./core-cpu1 > ../../../cFS_startup_cpu1.txt &
-          sleep 30
-          ../host/cmdUtil --endian=LE --pktid=0x1806 --cmdcode=2 --half=0x0002
+          truncate -s 0 ./build/exe/cpu1/cf/cfe_es_startup.scr
+          if [ "x$APP_DEP_LOWER" != "x" ]
+          then
+            echo "CFE_LIB, $APP_DEP_LOWER, ${APP_DEP_UPPER}_Init, $APP_DEP_UPPER, 0, 0, 0x0, 0;" >> ./build/exe/cpu1/cf/cfe_es_startup.scr
+          fi
+          echo "CFE_APP, $APP_LOWER, ${APP_UPPER}_${{ inputs.app-entrypoint-suffix }}, $APP_UPPER, 80, 16384, 0x0, 0;" >> ./build/exe/cpu1/cf/cfe_es_startup.scr
+          cat ./build/exe/cpu1/cf/cfe_es_startup.scr
 
+      - name: Archive binaries
+        run: |
+          cd $GITHUB_WORKSPACE/build/exe
+          find -maxdepth 1 -mindepth 1 -type d | while read dir
+          do
+            inst=$(basename ${dir})
+            tar Jcv -f $GITHUB_WORKSPACE/${inst}-bin.tar.xz -C ${inst} .
+          done
+
+      - name: Upload all artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: ${{ inputs.app-name }}-bin
+            path: ./*.tar.xz
+
+  run-app:
+    needs: build-app
+    name: Run CFE with app, check for startup messages
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download artifact
+# This alternate download fetches the artifacts from a different run
+# It is useful to skip the build step and go straight to execution- saving lots of time
+#        run: |
+#          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+#          gh run download 67564 -p ${{ inputs.app-name }}-bin
+#          ls -lR .
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.app-name }}-bin
+          path: ${{ inputs.app-name }}-bin
+
+      - name: List Files 1
+        run: ls -lR .
+
+      - name: Unpack artifacts
+        run: |
+          for i in cpu1 host
+          do
+            mkdir -p "$i"
+            tar Jxv -C "$i" -f "$GITHUB_WORKSPACE/${{ inputs.app-name }}-bin/$i-bin.tar.xz"
+          done
+
+      - name: List Files 2
+        run: |
+          pwd
+          ls -lR .
+          
+      # Replaces: start-cfs-container action
+      - name: Start cFS
+        working-directory: ./cpu1
+        run: |
+          echo "Starting cFS..."
+          ./core-cpu1 > $GITHUB_WORKSPACE/cFS_startup_cpu1.txt 2>&1 &
+          CFS_PID=$!
+          echo "CFS_PID=$CFS_PID" >> $GITHUB_ENV
+          echo "Started cFS with PID: $CFS_PID"
+          sleep 2
+
+      # Replaces: healthcheck-logs action
+      - name: Check for boot completion
+        run: |
+          count=0
+          # Check for the operational state (healthcheck-regex equivalent)
+          while [ $count -lt 30 ] && ! grep -q 'CFE_ES_Main entering OPERATIONAL state' cFS_startup_cpu1.txt
+          do
+            sleep 2
+            count=$(($count+1))
+          done
+          
+          echo "Boot log after ${count} iterations:"
+          cat cFS_startup_cpu1.txt
+          
+          # Verify the healthcheck regex was found
+          if ! grep -q 'CFE_ES_Main entering OPERATIONAL state' cFS_startup_cpu1.txt; then
+            echo "ERROR: Failed to reach OPERATIONAL state"
+            exit 1
+          fi
+          
+          echo "✓ cFS reached OPERATIONAL state"
+
+      - name: Shut down CFE
+        if: ${{ steps.check-cpu1.outputs.ip-addr != '' }}
+        working-directory: ./host
+        run: |
+          ./cmd_send -v --host=${{ steps.check-cpu1.outputs.ip-addr }} --endian=LE --pktid=0x1806 --cmdcode=2 --half=0x0002
+          sleep 2
+
+      - name: Capture Logs
+        if: ${{ always() && steps.start-cpu1.outputs.container-id != '' }}
+        run: docker logs ${{ steps.start-cpu1.outputs.container-id }} > cFS_startup_cpu1.txt
+
+        # replace Stop CPU1 Container
+      - name: Stop cFS process
+        if: always()
+        run: |
+          if [ -n "$CFS_PID" ] && kill -0 $CFS_PID 2>/dev/null; then
+            echo "Stopping cFS process $CFS_PID"
+            kill $CFS_PID || true
+            sleep 2
+            # Force kill if still running
+            if kill -0 $CFS_PID 2>/dev/null; then
+              echo "Force stopping cFS process"
+              kill -9 $CFS_PID 2>/dev/null || true
+            fi
+            echo "✓ cFS process stopped"
+          else
+            echo "cFS process already stopped or not found"
+          fi
+          
       - name: Archive results
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: cFS_startup_log
