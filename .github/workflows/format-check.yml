@@ -45,7 +45,7 @@ jobs:
           path: repo
 
       - name: Get style from bundle
-        run: curl -fsL ${{ github.server_url }}/nasa/cFS/raw/refs/heads/dev/.clang-format > $GITHUB_WORKSPACE/clang-format.yml
+        run: curl -fsL ${{ github.server_url }}/arielswalker/cFS/raw/refs/heads/fix-965-update-clang-format-match-internal/.clang-format > $GITHUB_WORKSPACE/clang-format.yml
 
       - name: Check configuration
         run: clang-format-19 -style=file:$GITHUB_WORKSPACE/clang-format.yml --dump-config
@@ -67,6 +67,7 @@ jobs:
 
   check-commit-message:
     name: Check Commit Message
+    needs: check-for-duplicates
     # Only run for pull-requests.
     if: ${{ github.event_name == 'pull_request' && !startsWith(github.head_ref, 'ic-') }}
     runs-on: ubuntu-22.04
@@ -77,7 +78,7 @@ jobs:
         uses: gsactions/commit-message-checker@v2
         if: always()
         with:
-          pattern: ^((Fix|HotFix|Part|Issue|Ticket)\s([a-zA-Z0-9_-]+/)?[a-zA-Z0-9_-]*\#[0-9]+[,:]\s.+|Merge\spull\srequest\s\#[0-9]+\s.+|IC:\s.+)
+          pattern: '^((Fix|HotFix|Part|Issue|Ticket)\s(nasa/)?[a-zA-Z]*\#[0-9]+[,:]\s[a-zA-Z0-9]+|Merge\spull\srequest\s\#[0-9]+\s[a-zA-Z0-9]+|IC:\s[a-zA-Z0-9]+)'
           error: 'You need at least one "Fix|HotFix|Part|Issue|Ticket #<issue number><,|:> <short description>" line in the commit message.'
           excludeDescription: 'true'
           excludeTitle: 'true'
