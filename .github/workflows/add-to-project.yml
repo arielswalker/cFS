@@ -3,7 +3,9 @@ name: Add Issue or PR to Project
 on:
   issues:
     types: [opened]
-  pull_request_target:
+  # Testing purpose changed pull_request_target to pull_request
+  # pull_request_target trigger always runs the workflow using the code that exists in the target (base) branch 
+  pull_request:
     types: [opened, ready_for_review, converted_to_draft]
 
 jobs:

@@ -58,6 +58,11 @@ jobs:
           env
           echo "WORK_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
 
+      - name: Verify Container Contents
+        run: |
+          which git || echo "Git is MISSING!"
+          cat /etc/os-release
+
       - name: Checkout cFS with submodules
         uses: actions/checkout@v4
         with:

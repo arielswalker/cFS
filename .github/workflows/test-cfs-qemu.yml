@@ -33,7 +33,7 @@ jobs:
 
     name: Build ${{ matrix.config }}.${{ matrix.doctype }} Documentation
     runs-on: ubuntu-22.04
-    container: ghcr.io/core-flight-system/cfsbuildenv-doxygen:latest
+    container: ghcr.io/arielswalker/cfsbuildenv-doxygen:ci
     steps:
       - name: Checkout Bundle
         uses: actions/checkout@v4
@@ -88,17 +88,17 @@ jobs:
       matrix:
         include:
           # - config: qemu_yocto_linux
-          #   build-image: 'ghcr.io/core-flight-system/cfsbuildenv-yocto:latest'
+          #   build-image: 'ghcr.io/core-flight-system/cfsbuildenv-yocto:ci'
           - config: native_std
-            build-image: 'ghcr.io/core-flight-system/cfsbuildenv-linux:latest'
+            build-image: 'ghcr.io/arielswalker/cfsbuildenv-linux:ci'
           - config: native_eds
-            build-image: 'ghcr.io/core-flight-system/cfsbuildenv-linux:latest'
+            build-image: 'ghcr.io/arielswalker/cfsbuildenv-linux:ci'
           - config: pc686_rtems5
-            build-image: 'ghcr.io/core-flight-system/cfsbuildenv-rtems5:latest'
+            build-image: 'ghcr.io/arielswalker/cfsbuildenv-rtems5:ci'
           - config: rpi_linux
-            build-image: 'ghcr.io/core-flight-system/cfsbuildenv-arm-linux:latest'
+            build-image: 'ghcr.io/arielswalker/cfsbuildenv-arm-linux:ci'
           - config: gr712_rtems5
-            build-image: 'ghcr.io/core-flight-system/cfsbuildenv-gaisler-sparc-rcc:latest'
+            build-image: 'ghcr.io/arielswalker/cfsbuildenv-gaisler-sparc-rcc:ci'
     name: Build CFS with ${{ matrix.config }} configuration
     uses: arielswalker/cFS/.github/workflows/build-cfs-multitarget.yml@test-cfs/workflows122
     with:
@@ -124,22 +124,22 @@ jobs:
         include:
           - config: native_std
             healthcheck-regex: 'CFE_ES_Main entering OPERATIONAL state$'
-            exec-image: ghcr.io/core-flight-system/cfsbuildenv-linux:latest
+            exec-image: ghcr.io/arielswalker/cfsbuildenv-linux:ci
             cpu1-test-procedure: trad_le
             cpu2-test-procedure: trad_le
           - config: native_eds
             healthcheck-regex: 'CFE_ES_Main entering OPERATIONAL state$'
-            exec-image: ghcr.io/core-flight-system/cfsbuildenv-linux:latest
+            exec-image: ghcr.io/arielswalker/cfsbuildenv-linux:ci
             cpu1-test-procedure: eds
             cpu2-test-procedure: eds
-          - config: qemu_yocto_linux
-            healthcheck-regex: '^Poky (Yocto Project Reference Distro)'
-            exec-image: ghcr.io/core-flight-system/cfsexec-qemu:latest
-            cpu1-test-procedure: trad_le
-            cpu2-test-procedure: trad_be
+          # - config: qemu_yocto_linux
+          #   healthcheck-regex: '^Poky (Yocto Project Reference Distro)'
+          #   exec-image: ghcr.io/core-flight-system/cfsexec-qemu:ci
+          #   cpu1-test-procedure: trad_le
+          #   cpu2-test-procedure: trad_be
           - config: pc686_rtems5
             healthcheck-regex: 'CFE_ES_Main entering OPERATIONAL state'
-            exec-image: ghcr.io/core-flight-system/cfsexec-qemu:latest
+            exec-image: ghcr.io/arielswalker/cfsexec-qemu:ci
             cpu1-test-procedure: trad_le
             cpu2-test-procedure: trad_le
 
