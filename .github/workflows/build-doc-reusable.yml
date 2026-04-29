@@ -82,7 +82,7 @@ jobs:
 
       - name: Set up app source
         if: steps.cache-src-bld.outputs.cache-hit != 'true'
-        uses: nasa/cFS/actions/setup-app@dev
+        uses: arielswalker/cFS/actions/setup-app@test-nasa/osal1527
 
       - name: Generate OSAL header list
         if: ${{ inputs.needs_osal_api == true }}
