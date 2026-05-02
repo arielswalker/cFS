@@ -45,7 +45,7 @@ jobs:
           path: repo
 
       - name: Get style from bundle
-        run: curl -fsL ${{ github.server_url }}/nasa/cFS/raw/refs/heads/dev/.clang-format > $GITHUB_WORKSPACE/clang-format.yml
+        run: curl -fsL ${{ github.server_url }}/arielswalker/cFS/raw/refs/heads/fix-965-update-clang-format-match-internal/.clang-format > $GITHUB_WORKSPACE/clang-format.yml
 
       - name: Check configuration
         run: clang-format-19 -style=file:$GITHUB_WORKSPACE/clang-format.yml --dump-config
@@ -67,6 +67,7 @@ jobs:
 
   check-commit-message:
     name: Check Commit Message
+    needs: check-for-duplicates
     # Only run for pull-requests.
     if: ${{ github.event_name == 'pull_request' && !startsWith(github.head_ref, 'ic-') }}
     runs-on: ubuntu-22.04
