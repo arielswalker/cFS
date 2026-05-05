@@ -11,6 +11,12 @@ on:
         default: cFS
 
       # Optional inputs
+      app-name:
+        description: Application name, if different from repo name
+        type: string
+        required: false
+        default: ${{ github.event.repository.name }}
+
       category:
         description: 'Analysis Category'
         required: false
@@ -83,40 +89,44 @@ jobs:
       security-events: write
 
     steps:
-      # Setup Bundle directory
-      - name: Setup cFS-Bundle directory (component-path = cFS)
-        if: inputs.component-path == 'cFS'
-        run:
-          echo "BUILD_DIRECTORY=${{github.workspace}}" >> $GITHUB_ENV
+      # For apps
+      - name: Set up app source
+        if: contains(inputs.component-path, 'apps')
+        uses: nasa/cFS/actions/setup-app@dev
+        with:
+          app-name: ${{ inputs.app-name }}
+          dependency: ${{ inputs.dependency }}
 
-      - name: Setup cFS-Bundle directory (component-path != cFS)
-        if: inputs.component-path != 'cFS'
-        run: |
-          cd ..
-          git clone https://github.com/nasa/cFS.git --recurse-submodules
-          cd cFS
-          echo "BUILD_DIRECTORY=$(pwd)" >> $GITHUB_ENV
-          git log -1 --pretty=oneline
-          git submodule
-          rm -r .git
-          rm -rf ${{ inputs.component-path }}
-          ln -s ${{github.workspace}} ${{ inputs.component-path }}
-
-
-      - name: Checkout ${{ github.repository }}
-        uses: actions/checkout@v4
+      # For cFS bundle, cFE, and osal
+      - name: Checkout Current Repo
+        if: inputs.component-path == 'cFS' || inputs.component-path == 'cfe' || inputs.component-path == 'osal'
+        uses: actions/checkout@v5
         with:
            submodules: recursive
+           path: ${{ (inputs.component-path != 'cFS' && inputs.component-path != 'osal') && inputs.component-path || '' }}
 
-        # Setup the build system
-      - name: cFS Build Setup
+      # For cFE
+      - name: Set up cFE
+        if: inputs.component-path == 'cfe'
+        uses: nasa/cFE/.github/actions/setup-cfe@dev
+        with:
+          source-dir: .
+          preferred-ref: ${{ github.head_ref }}
+
+      # For osal
+      - name: Setup Build
+        if: inputs.component-path == 'osal'
         run: |
           ${{ inputs.setup }}
-          ${{ inputs.prep }}
-        working-directory: ${{env.BUILD_DIRECTORY}}
 
+      # For cFS bundle, cFE, and osal
+      - name: Prep Build
+        if: inputs.component-path == 'cFS' || inputs.component-path == 'cfe' || inputs.component-path == 'osal'
+        run: |
+          ${{ inputs.prep }}
+          
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: cpp
           config-file: nasa/cFS/.github/codeql/codeql-${{matrix.scan-type}}.yml@main
@@ -126,9 +136,8 @@ jobs:
         working-directory: ${{env.BUILD_DIRECTORY}}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
-          add-snippets: true
           category: ${{matrix.scan-type}}
           upload: false
           output: CodeQL-Sarif-${{ matrix.scan-type }}
@@ -149,12 +158,12 @@ jobs:
             output: CodeQL-Sarif-${{ matrix.scan-type }}/Codeql-${{ matrix.scan-type }}.sarif
 
       - name: Archive Sarif
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: CodeQL-Sarif-${{ matrix.scan-type }}
           path: CodeQL-Sarif-${{ matrix.scan-type }}
 
       - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: CodeQL-Sarif-${{ matrix.scan-type }}/Codeql-${{ matrix.scan-type }}.sarif
