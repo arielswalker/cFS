@@ -54,8 +54,8 @@ defaults:
 env:
   SIMULATION: native
   ENABLE_UNIT_TESTS: ${{inputs.test}}
-  OMIT_DEPRECATED: true
-  BUILDTYPE: release
+  OMIT_DEPRECATED: false
+  BUILDTYPE: debug
   REPO: ${{github.event.repository.name}}
 
 jobs:
@@ -78,6 +78,7 @@ jobs:
     needs: check-for-duplicates
     if: ${{ needs.check-for-duplicates.outputs.should_skip != 'true' }}
     runs-on: ubuntu-22.04
+    container: ghcr.io/core-flight-system/cfsbuildenv-linux:latest
     timeout-minutes: 15
 
     strategy:
@@ -97,13 +98,22 @@ jobs:
           app-name: ${{ inputs.app-name }}
           dependency: ${{ inputs.dependency }}
 
-      # For cFS bundle, cFE, and osal
-      - name: Checkout Current Repo
-        if: inputs.component-path == 'cFS' || inputs.component-path == 'cfe' || inputs.component-path == 'osal'
-        uses: actions/checkout@v5
+      # For osal cFS bundle build, tools, and psp
+      - name: Checkout cFS Bundle
+        if: inputs.component-path == 'osal-bundle' || contains(inputs.component-path, 'tools') || inputs.component-path == 'psp'
+        uses: actions/checkout@v6
         with:
            submodules: recursive
-           path: ${{ (inputs.component-path != 'cFS' && inputs.component-path != 'osal') && inputs.component-path || '' }}
+           repository: nasa/cFS
+           ref: dev
+
+      # For cFS bundle, cFE, osal
+      - name: Checkout Current Repo
+        if: "!contains(inputs.component-path, 'apps')"
+        uses: actions/checkout@v6
+        with:
+           submodules: recursive
+           path: ${{ inputs.component-path == 'osal-bundle' && 'osal' || (inputs.component-path != 'cFS' && inputs.component-path != 'osal' && inputs.component-path || '') }}
 
       # For cFE
       - name: Set up cFE
@@ -112,6 +122,7 @@ jobs:
         with:
           source-dir: .
           preferred-ref: ${{ github.head_ref }}
+          org: nasa
 
       # For osal
       - name: Setup Build
@@ -119,12 +130,10 @@ jobs:
         run: |
           ${{ inputs.setup }}
 
-      # For cFS bundle, cFE, and osal
       - name: Prep Build
-        if: inputs.component-path == 'cFS' || inputs.component-path == 'cfe' || inputs.component-path == 'osal'
         run: |
           ${{ inputs.prep }}
-          
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
@@ -148,7 +157,7 @@ jobs:
           sed -i 's/"name" : "CodeQL"/"name" : "CodeQL-${{ matrix.scan-type }}"/g' CodeQL-Sarif-${{ matrix.scan-type }}/Codeql-${{ matrix.scan-type }}.sarif
 
       - name: filter-sarif
-        uses: zbazztian/filter-sarif@master
+        uses: advanced-security/filter-sarif@v1
         with:
             patterns: |
                 -**/*.md
@@ -158,7 +167,7 @@ jobs:
             output: CodeQL-Sarif-${{ matrix.scan-type }}/Codeql-${{ matrix.scan-type }}.sarif
 
       - name: Archive Sarif
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: CodeQL-Sarif-${{ matrix.scan-type }}
           path: CodeQL-Sarif-${{ matrix.scan-type }}
@@ -167,3 +176,10 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: CodeQL-Sarif-${{ matrix.scan-type }}/Codeql-${{ matrix.scan-type }}.sarif
+          ref: ${{ github.ref }}
+          sha: ${{ github.event.pull_request.head.sha || github.sha }}
+          checkout_path: ${{ 
+            inputs.component-path == 'osal-bundle' && format('{0}/osal', github.workspace) || 
+            (contains(inputs.component-path, 'apps') || contains(inputs.component-path, 'tools')) && format('{0}/{1}', github.workspace, inputs.component-path) || 
+            github.workspace 
+            }}
