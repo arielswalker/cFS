@@ -36,7 +36,7 @@ jobs:
     if: ${{ needs.check-for-duplicates.outputs.should_skip != 'true' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-    container: ghcr.io/core-flight-system/cfsbuildenv-linux:latest
+    container: ghcr.io/arielswalker/cfsbuildenv-linux:ci
 
     steps:
       - name: Checkout
